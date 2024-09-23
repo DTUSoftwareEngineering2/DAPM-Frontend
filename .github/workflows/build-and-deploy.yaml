@@ -2,30 +2,30 @@ name: Deploy React App
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
-  # build:
-  #   runs-on: ubuntu-latest
-  #
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-  #
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-  #
-  #     - name: Log in to DockerHub
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_TOKEN }}
-  #
-  #     - name: Build and push Docker image
-  #       run: |
-  #         docker build -t maximerochat/react-app:latest .
-  #         docker push maximerochat/react-app:latest
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t maximerochat/react-app:latest .
+          docker push maximerochat/react-app:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -69,7 +69,7 @@ jobs:
 
           # Start the OpenVPN connection
           sudo openvpn --config openvpn.conf --daemon
-          sleep 10  # Wait for VPN connection to establish      - name: Deploy to remote server
+          sleep 10  # Wait for VPN connection to establish
         
       - name: Deploy to remote server
         uses: appleboy/ssh-action@v0.1.8

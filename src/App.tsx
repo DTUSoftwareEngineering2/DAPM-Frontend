@@ -11,7 +11,7 @@ import { RouterProvider, createBrowserRouter, createHashRouter } from "react-rou
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import { loadState, saveState } from "./redux/browser-storage";
-
+import HelloPage from "./routes/HelloRoute";
 // Configure redux-persist
 const persistConfig = {
   key: 'root',
@@ -47,12 +47,16 @@ export type AppDispatch = typeof store.dispatch
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <UserPage/>,
+    element: <UserPage />,
 
   },
   {
     path: "/pipeline",
-    element: <PipelineComposer/>,
+    element: <PipelineComposer />,
+  },
+  {
+    path: "/hello",
+    element: <HelloPage />,
   }
 ]);
 
