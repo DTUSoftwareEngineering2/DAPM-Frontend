@@ -29,7 +29,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
     steps:
       - name: Install OpenVPN
         run: sudo apt-get update && sudo apt-get install -y openvpn
@@ -70,6 +70,8 @@ jobs:
           # Start the OpenVPN connection
           sudo openvpn --config openvpn.conf --daemon
           sleep 10  # Wait for VPN connection to establish      - name: Deploy to remote server
+        
+      - name: Deploy to remote server
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.SSH_HOST }}
