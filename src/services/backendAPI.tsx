@@ -4,7 +4,7 @@ import { json } from "stream/consumers";
 const vmPath = `dapm1.compute.dtu.dk:5000`
 const localPath = `localhost:5000`
 
-const path = vmPath
+const path = localPath
 
 export async function fetchStatus(ticket: string) {
 
@@ -337,11 +337,11 @@ export async function fetchPipeline(orgId: string, repId: string, pipId: string)
 }
 
 export async function putRepository(orgId: string, repositoryName: string) {
-    
+
     const headers = new Headers()
     headers.append("accept", "application/json")
     headers.append("Content-Type", "application/json")
-    
+
 
     try {
         const response = await fetch(`http://` + path + `/Organizations/${orgId}/repositories`, {
@@ -427,7 +427,7 @@ export async function putResource(orgId: string, repId: string, formData: FormDa
     }
 }
 
-export async function putPipeline(orgId: string, repId: string, pipelineData:any){
+export async function putPipeline(orgId: string, repId: string, pipelineData: any) {
     console.log(pipelineData)
     try {
         const response = await fetch(`http://${path}/Organizations/${orgId}/repositories/${repId}/pipelines`, {
@@ -514,7 +514,7 @@ export async function putExecution(orgId: string, repId: string, pipeId: string)
     }
 }
 
-export async function putCommandStart(orgId: string, repId: string, pipeId: string, exeId:string) {
+export async function putCommandStart(orgId: string, repId: string, pipeId: string, exeId: string) {
     try {
         const response = await fetch(`http://${path}/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/executions/${exeId}/commands/start`, {
             method: "POST",
@@ -605,9 +605,9 @@ export async function PostNewPeer(domainName: string) {
         const headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
-        const response = await fetch(`http://` + path +`/system/collab-handshake`, {
+        const response = await fetch(`http://` + path + `/system/collab-handshake`, {
             method: "POST",
-            body: JSON.stringify({targetPeerDomain: domainName}),
+            body: JSON.stringify({ targetPeerDomain: domainName }),
             headers: headers
         });
 
