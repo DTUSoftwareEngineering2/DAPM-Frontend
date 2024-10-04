@@ -19,6 +19,7 @@ import Register from "./routes/Register";
 import Login from "./routes/Login";
 import { Routes, Route } from "react-router-dom";
 // Configure redux-persist
+//test comment
 const persistConfig = {
   key: "root",
   storage,
