@@ -7,7 +7,11 @@ import rootReducer from "./redux/slices";
 
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+  RouterProvider,
+  createBrowserRouter,
+  createHashRouter,
+} from "react-router-dom";
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import { loadState, saveState } from "./redux/browser-storage";
@@ -18,6 +22,7 @@ import { AuthProvider } from "./context/AuthProvider";
 import { Button } from "@mui/material";
 import { logout } from "./context/AuthProvider";
 // Configure redux-persist
+//test comment
 const persistConfig = {
   key: "root",
   storage,
@@ -74,6 +79,10 @@ const router = createBrowserRouter([
         <PipelineComposer />
       </PrivateRoute>
     ),
+  },
+  {
+    path: "/hello",
+    element: <HelloPage />,
   },
 ]);
 
