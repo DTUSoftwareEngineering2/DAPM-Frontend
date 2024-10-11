@@ -679,3 +679,57 @@ export async function downloadResource(organizationId: string, repositoryId: str
         throw error; // Propagate error to the caller
     }
 }
+
+export async function fetchUserInfo(accessToken: string) {
+    try {
+        const response = await fetch(`http://${path}/user/info`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Fetching user info, Network response was not ok');
+        }
+
+        // Extract the ticketId from the initial response
+        const jsonData = await response.json();
+        const ticketId = jsonData.ticketId;
+
+        // Define a function to fetch the status using the ticketId
+        const getStatusData = async (ticketId: string): Promise<any> => {
+            const maxRetries = 10;
+            const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+            for (let retries = 0; retries < maxRetries; retries++) {
+                try {
+                    const data = await fetchStatus(ticketId);
+                    if (data.status === "1") {  // Check if status is completed
+                        return data.result.user;  // Return the user data
+                    }
+                    await delay(1000);  // Wait for 1 second before retrying
+                } catch (error) {
+                    if (retries === maxRetries - 1) {
+                        throw new Error('Max retries reached');
+                    }
+                }
+            }
+            throw new Error('Failed to fetch user data');
+        };
+
+        // Call the getStatusData function and return the user information
+        const userInfo = await getStatusData(ticketId);
+        return {
+            userId: userInfo.id,
+            firstName: userInfo.firstName,
+            lastName: userInfo.LastName,
+            organizationId: userInfo.organizationId,
+            email: userInfo.mail,
+        };
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        throw error;
+    }
+}

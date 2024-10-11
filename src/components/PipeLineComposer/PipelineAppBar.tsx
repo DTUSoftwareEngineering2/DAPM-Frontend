@@ -3,7 +3,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import EditIcon from '@mui/icons-material/Edit';
 import { Node } from "reactflow";
@@ -11,6 +11,7 @@ import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../re
 import { putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
+import { fetchUserInfo } from "../../services/backendAPI";
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();
@@ -132,6 +133,69 @@ export default function PipelineAppBar() {
 
   }
 
+  // USER STATUS
+
+  interface User {
+    id: number;
+    name: string;
+    status: string;
+    organizationid: number;
+    email: string;
+  }
+
+  const [user, setUser] = useState<User>({
+    id: 0,
+    name: "NAME",
+    status: "STATUS",
+    organizationid: 0,
+    email: "EM@IL"
+  });
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map((n) => n[0]).join("").toUpperCase();
+  };
+
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+    fetchAndSetUserInfo()
+  };
+
+  const fetchAndSetUserInfo = async () => {
+    try {
+      const accessToken = 'GET_ACCESS_TOKEN_HERE';
+      const data = await fetchUserInfo(accessToken);
+      const updatedUser = {
+        id: data.userId,
+        name: data.firstName + " " + data.lastName,
+        status: "online",
+        organizationid: data.organizationId,
+        email: data.email,
+      };
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Error fetching user information:', error);
+      // Default User in case of an error
+      setUser({
+        id: 1,
+        name: "Alice",
+        status: "online",
+        organizationid: 101,
+        email: "alice@dtu.dk"
+      })
+    }
+  };
+
+  const handleLogout = () => {
+    setUser({ ...user, status: 'offline' });
+    setSelectedUser(null);
+  };
+
+  useEffect(() => {
+    fetchAndSetUserInfo();
+  }, []);
+
   return (
     <AppBar position="fixed">
       <Toolbar sx={{ flexGrow: 1 }}>
@@ -154,11 +218,61 @@ export default function PipelineAppBar() {
             </Box>
           )}
         </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
+            <Box
+              key={user.id}
+              sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
+              onClick={() => handleUserClick(user)}
+            >
+              <Box
+                className="status-circle"
+                sx={{
+                  width: '43px',
+                  height: '43px',
+                  borderRadius: '50%',
+                  backgroundColor:
+                    user.status === 'online' ? '#4CAF50' :
+                    user.status === 'away' ? '#FFC107' :
+                    '#F44336',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                }}
+              >
+                {getInitials(user.name)}
+              </Box>
+            </Box>
+        </Box>
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
         </Button>
       </Toolbar>
+      {selectedUser && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '100px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: '#202020',
+            padding: '20px',
+            borderRadius: '10px',
+            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+            zIndex: 10,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: '10px' }}> {selectedUser.name}</Typography>
+          <Typography variant="body1"><strong>ID :</strong> {selectedUser.id}</Typography>
+          <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
+          <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
+          <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
+          <Button onClick={() => handleLogout()} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
+          <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Fermer</Button>
+        </Box>
+      )}
     </AppBar>
   )
 }
-
