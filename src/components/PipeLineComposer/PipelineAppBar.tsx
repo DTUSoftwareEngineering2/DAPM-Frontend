@@ -3,7 +3,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import EditIcon from '@mui/icons-material/Edit';
 import { Node } from "reactflow";
@@ -12,8 +12,10 @@ import { putCommandStart, putExecution, putPipeline } from "../../services/backe
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 import { fetchUserInfo } from "../../services/backendAPI";
+import AuthContext from "../../context/AuthProvider";
 
 export default function PipelineAppBar() {
+  const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -164,7 +166,13 @@ export default function PipelineAppBar() {
 
   const fetchAndSetUserInfo = async () => {
     try {
-      const accessToken = 'GET_ACCESS_TOKEN_HERE';
+      var accessToken = "";
+      if (auth?.accesstoken) {
+        accessToken = auth.accesstoken;
+      }
+      console.log("USER TOCKET");
+      console.log(auth.accesstoken);
+
       const data = await fetchUserInfo(accessToken);
       const updatedUser = {
         id: data.userId,
@@ -173,6 +181,7 @@ export default function PipelineAppBar() {
         organizationid: data.organizationId,
         email: data.email,
       };
+      console.log(data);
       setUser(updatedUser);
     } catch (error) {
       console.error('Error fetching user information:', error);
@@ -219,32 +228,32 @@ export default function PipelineAppBar() {
           )}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
+          <Box
+            key={user.id}
+            sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
+            onClick={() => handleUserClick(user)}
+          >
             <Box
-              key={user.id}
-              sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
-              onClick={() => handleUserClick(user)}
-            >
-              <Box
-                className="status-circle"
-                sx={{
-                  width: '43px',
-                  height: '43px',
-                  borderRadius: '50%',
-                  backgroundColor:
-                    user.status === 'online' ? '#4CAF50' :
+              className="status-circle"
+              sx={{
+                width: '43px',
+                height: '43px',
+                borderRadius: '50%',
+                backgroundColor:
+                  user.status === 'online' ? '#4CAF50' :
                     user.status === 'away' ? '#FFC107' :
-                    '#F44336',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                }}
-              >
-                {getInitials(user.name)}
-              </Box>
+                      '#F44336',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '16px',
+              }}
+            >
+              {getInitials(user.name)}
             </Box>
+          </Box>
         </Box>
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>

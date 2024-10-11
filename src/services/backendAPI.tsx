@@ -1,3 +1,4 @@
+import { log } from "console";
 import { Stream } from "stream";
 import { json } from "stream/consumers";
 
@@ -706,7 +707,9 @@ export async function fetchUserInfo(accessToken: string) {
             for (let retries = 0; retries < maxRetries; retries++) {
                 try {
                     const data = await fetchStatus(ticketId);
-                    if (data.status === "1") {  // Check if status is completed
+                    console.log("FETCH USER");
+                    console.log(data);
+                    if (data.status === 1) {  // Check if status is completed
                         return data.result.user;  // Return the user data
                     }
                     await delay(1000);  // Wait for 1 second before retrying
@@ -724,8 +727,8 @@ export async function fetchUserInfo(accessToken: string) {
         return {
             userId: userInfo.id,
             firstName: userInfo.firstName,
-            lastName: userInfo.LastName,
-            organizationId: userInfo.organizationId,
+            lastName: userInfo.lastName,
+            organizationId: userInfo.organization,
             email: userInfo.mail,
         };
     } catch (error) {
