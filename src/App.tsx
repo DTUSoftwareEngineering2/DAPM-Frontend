@@ -15,7 +15,12 @@ import {
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import { loadState, saveState } from "./redux/browser-storage";
-import HelloPage from "./routes/HelloRoute";
+import Register from "./routes/Register";
+import Login from "./routes/Login";
+import PrivateRoute from "./routes/PrivateRoute";
+import { AuthProvider } from "./context/AuthProvider";
+import { Button } from "@mui/material";
+import { logout } from "./context/AuthProvider";
 // Configure redux-persist
 //test comment
 const persistConfig = {
@@ -52,17 +57,33 @@ export type AppDispatch = typeof store.dispatch;
 
 const router = createBrowserRouter([
   {
+    path: "/register",
+    element: <Register />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
     path: "/",
-    element: <UserPage />,
+    element: (
+      <PrivateRoute>
+        <UserPage />
+      </PrivateRoute>
+    ),
   },
   {
     path: "/pipeline",
-    element: <PipelineComposer />,
+    element: (
+      <PrivateRoute>
+        <PipelineComposer />
+      </PrivateRoute>
+    ),
   },
-  {
-    path: "/hello",
-    element: <HelloPage />,
-  },
+  // {
+  //   path: "/hello",
+  //   element: <HelloPage />,
+  // },
 ]);
 
 export default function App() {
@@ -70,7 +91,9 @@ export default function App() {
     <ThemeProvider theme={darkTheme}>
       <div className="App">
         <Provider store={store}>
-          <RouterProvider router={router} />
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
         </Provider>
       </div>
     </ThemeProvider>
