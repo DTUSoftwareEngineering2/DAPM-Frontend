@@ -4,8 +4,7 @@ import { json } from "stream/consumers";
 
 const vmPath = `dapm1.compute.dtu.dk:5000`
 const localPath = `localhost:5001`
-
-const path = localPath
+const path = vmPath;
 
 export async function fetchStatus(ticket: string) {
 
