@@ -1,3 +1,4 @@
+import { log } from "console";
 import { Stream } from "stream";
 import { json } from "stream/consumers";
 
@@ -36,7 +37,7 @@ export async function fetchFile(ticket: string) {
         return error;
     }
 }
-    
+
 
 export async function fetchOrganisations() {
     try {
@@ -337,11 +338,11 @@ export async function fetchPipeline(orgId: string, repId: string, pipId: string)
 }
 
 export async function putRepository(orgId: string, repositoryName: string) {
-    
+
     const headers = new Headers()
     headers.append("accept", "application/json")
     headers.append("Content-Type", "application/json")
-    
+
 
     try {
         const response = await fetch(`http://` + path + `/Organizations/${orgId}/repositories`, {
@@ -427,7 +428,7 @@ export async function putResource(orgId: string, repId: string, formData: FormDa
     }
 }
 
-export async function putPipeline(orgId: string, repId: string, pipelineData:any){
+export async function putPipeline(orgId: string, repId: string, pipelineData: any) {
     console.log(pipelineData)
     try {
         const response = await fetch(`http://${path}/Organizations/${orgId}/repositories/${repId}/pipelines`, {
@@ -514,7 +515,7 @@ export async function putExecution(orgId: string, repId: string, pipeId: string)
     }
 }
 
-export async function putCommandStart(orgId: string, repId: string, pipeId: string, exeId:string) {
+export async function putCommandStart(orgId: string, repId: string, pipeId: string, exeId: string) {
     try {
         const response = await fetch(`http://${path}/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/executions/${exeId}/commands/start`, {
             method: "POST",
@@ -605,9 +606,9 @@ export async function PostNewPeer(domainName: string) {
         const headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
-        const response = await fetch(`http://` + path +`/system/collab-handshake`, {
+        const response = await fetch(`http://` + path + `/system/collab-handshake`, {
             method: "POST",
-            body: JSON.stringify({targetPeerDomain: domainName}),
+            body: JSON.stringify({ targetPeerDomain: domainName }),
             headers: headers
         });
 
@@ -677,5 +678,61 @@ export async function downloadResource(organizationId: string, repositoryId: str
     } catch (error) {
         console.error('Fetching orgs, Error fetching data:', error);
         throw error; // Propagate error to the caller
+    }
+}
+
+export async function fetchUserInfo(accessToken: string) {
+    try {
+        const response = await fetch(`http://${path}/user/info`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Fetching user info, Network response was not ok');
+        }
+
+        // Extract the ticketId from the initial response
+        const jsonData = await response.json();
+        const ticketId = jsonData.ticketId;
+
+        // Define a function to fetch the status using the ticketId
+        const getStatusData = async (ticketId: string): Promise<any> => {
+            const maxRetries = 10;
+            const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+            for (let retries = 0; retries < maxRetries; retries++) {
+                try {
+                    const data = await fetchStatus(ticketId);
+                    console.log("FETCH USER");
+                    console.log(data);
+                    if (data.status === 1) {  // Check if status is completed
+                        return data.result.user;  // Return the user data
+                    }
+                    await delay(1000);  // Wait for 1 second before retrying
+                } catch (error) {
+                    if (retries === maxRetries - 1) {
+                        throw new Error('Max retries reached');
+                    }
+                }
+            }
+            throw new Error('Failed to fetch user data');
+        };
+
+        // Call the getStatusData function and return the user information
+        const userInfo = await getStatusData(ticketId);
+        return {
+            userId: userInfo.id,
+            firstName: userInfo.firstName,
+            lastName: userInfo.lastName,
+            organizationId: userInfo.organization,
+            email: userInfo.mail,
+        };
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        throw error;
     }
 }
