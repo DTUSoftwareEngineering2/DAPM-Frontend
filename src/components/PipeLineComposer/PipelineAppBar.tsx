@@ -145,13 +145,7 @@ export default function PipelineAppBar() {
     email: string;
   }
 
-  const [user, setUser] = useState<User>({
-    id: 0,
-    name: "NAME",
-    status: "STATUS",
-    organizationid: 0,
-    email: "EM@IL"
-  });
+  const [user, setUser] = useState<User | null>(null);
 
   const getInitials = (name: string) => {
     return name.split(" ").map((n) => n[0]).join("").toUpperCase();
@@ -185,19 +179,11 @@ export default function PipelineAppBar() {
       setUser(updatedUser);
     } catch (error) {
       console.error('Error fetching user information:', error);
-      // Default User in case of an error
-      setUser({
-        id: 1,
-        name: "Alice",
-        status: "online",
-        organizationid: 101,
-        email: "alice@dtu.dk"
-      })
     }
   };
 
   const handleLogout = () => {
-    setUser({ ...user, status: 'offline' });
+    setUser(user ? { ...user, status: 'offline' } : null);
     setSelectedUser(null);
   };
 
@@ -229,19 +215,19 @@ export default function PipelineAppBar() {
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
           <Box
-            key={user.id}
+            key={user?.id}
             sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
-            onClick={() => handleUserClick(user)}
+            onClick={() => user && handleUserClick(user)}
           >
             <Box
               className="status-circle"
-              sx={{
+              sx={user ? {
                 width: '43px',
                 height: '43px',
                 borderRadius: '50%',
                 backgroundColor:
-                  user.status === 'online' ? '#4CAF50' :
-                    user.status === 'away' ? '#FFC107' :
+                  user?.status === 'online' ? '#4CAF50' :
+                    user?.status === 'away' ? '#FFC107' :
                       '#F44336',
                 display: 'flex',
                 alignItems: 'center',
@@ -249,9 +235,9 @@ export default function PipelineAppBar() {
                 color: 'white',
                 fontWeight: 'bold',
                 fontSize: '16px',
-              }}
+              } : {}}
             >
-              {getInitials(user.name)}
+              {user ? getInitials(user.name) : ''}
             </Box>
           </Box>
         </Box>
