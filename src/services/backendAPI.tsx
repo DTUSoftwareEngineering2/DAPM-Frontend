@@ -2,10 +2,10 @@ import { log } from "console";
 import { Stream } from "stream";
 import { json } from "stream/consumers";
 
-const vmPath = `dapm1.compute.dtu.dk:5000`
+const vmPath = "se2-c.compute.dtu.dk:5000"
 const localPath = `localhost:5000`
 
-const path = localPath
+const path = vmPath;
 
 export async function fetchStatus(ticket: string) {
 
