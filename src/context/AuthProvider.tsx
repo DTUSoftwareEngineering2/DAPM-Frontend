@@ -1,9 +1,9 @@
 import React, { createContext, useState, useEffect } from "react";
 
 type AuthContextType = {
-  auth: { email?: string; pwd?: string };
+  auth: { email?: string; pwd?: string; accesstoken?: string };
   setAuth: React.Dispatch<
-    React.SetStateAction<{ email?: string; pwd?: string }>
+    React.SetStateAction<{ email?: string; pwd?: string; accesstoken?: string }>
   >;
 };
 
@@ -15,7 +15,11 @@ export const logout = () => {
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [auth, setAuth] = useState<{ email?: string; pwd?: string }>(() => {
+  const [auth, setAuth] = useState<{
+    email?: string;
+    pwd?: string;
+    accesstoken?: string;
+  }>(() => {
     // Load auth data from localStorage if it exists
     const storedAuth = localStorage.getItem("auth");
     return storedAuth ? JSON.parse(storedAuth) : {};

@@ -27,7 +27,6 @@ const Login = () => {
   }, [success]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(email, pwd);
 
     try {
       const response = await axios.post(
@@ -41,9 +40,8 @@ const Login = () => {
       setPwd("");
       setSuccess(true);
       console.log(response.data);
-      console.log(JSON.stringify(response));
       //TODO change to accestoken
-      setAuth({ email, pwd });
+      setAuth({ email, pwd, accesstoken: response.data.accessToken });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {

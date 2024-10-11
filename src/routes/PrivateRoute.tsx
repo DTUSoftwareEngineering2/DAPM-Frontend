@@ -12,7 +12,7 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
     }
   }, [auth]);
 
-  console.log(auth.pwd);
+  console.log(auth);
   return auth?.pwd ? (
     children
   ) : (

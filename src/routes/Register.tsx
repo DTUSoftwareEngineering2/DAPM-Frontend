@@ -87,7 +87,7 @@ const Register = () => {
       );
       console.log(response.data);
       console.log(JSON.stringify(response));
-      setAuth({ email, pwd });
+      setAuth({ email, pwd, accesstoken: response.data.accessToken });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {
