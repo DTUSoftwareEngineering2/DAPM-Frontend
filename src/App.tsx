@@ -7,19 +7,17 @@ import rootReducer from "./redux/slices";
 
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
-import {
-  RouterProvider,
-  createBrowserRouter,
-  createHashRouter,
-} from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import { loadState, saveState } from "./redux/browser-storage";
 import Register from "./routes/Register";
 import Login from "./routes/Login";
-import { Routes, Route } from "react-router-dom";
+import PrivateRoute from "./routes/PrivateRoute";
+import { AuthProvider } from "./context/AuthProvider";
+import { Button } from "@mui/material";
+import { logout } from "./context/AuthProvider";
 // Configure redux-persist
-//test comment
 const persistConfig = {
   key: "root",
   storage,
@@ -54,10 +52,6 @@ export type AppDispatch = typeof store.dispatch;
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Login />,
-  },
-  {
     path: "/register",
     element: <Register />,
   },
@@ -66,12 +60,20 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
-    path: "/userpage",
-    element: <UserPage />,
+    path: "/",
+    element: (
+      <PrivateRoute>
+        <UserPage />
+      </PrivateRoute>
+    ),
   },
   {
     path: "/pipeline",
-    element: <PipelineComposer />,
+    element: (
+      <PrivateRoute>
+        <PipelineComposer />
+      </PrivateRoute>
+    ),
   },
 ]);
 
@@ -80,7 +82,9 @@ export default function App() {
     <ThemeProvider theme={darkTheme}>
       <div className="App">
         <Provider store={store}>
-          <RouterProvider router={router} />
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
         </Provider>
       </div>
     </ThemeProvider>

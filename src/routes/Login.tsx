@@ -22,7 +22,7 @@ const Login = () => {
 
   useEffect(() => {
     if (success) {
-      window.location.href = "/userpage";
+      window.location.href = "/";
     }
   }, [success]);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,10 +41,9 @@ const Login = () => {
       setPwd("");
       setSuccess(true);
       console.log(response.data);
-      console.log(response.data.accessToken);
       console.log(JSON.stringify(response));
-      const accessToken = response.data.accessToken;
-      setAuth({ email, pwd, accessToken });
+      //TODO change to accestoken
+      setAuth({ email, pwd });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {

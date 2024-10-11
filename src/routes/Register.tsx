@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useContext } from "react";
 import axios from "../api/axios";
 import { AxiosError } from "axios";
 import {
@@ -7,8 +7,11 @@ import {
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AuthContext from "../context/AuthProvider";
 
 const Register = () => {
+  const { setAuth } = useContext(AuthContext);
+
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const PWD_REGEX = /^(?=.*[a-z])[a-zA-Z0-_]{8,24}$/;
   const emailRef = useRef<HTMLInputElement>(null);
@@ -51,9 +54,10 @@ const Register = () => {
   useEffect(() => {
     setErrMsg("");
   }, [email, pwd, matchPwd]);
+
   useEffect(() => {
     if (success) {
-      window.location.href = "/userpage";
+      window.location.href = "/";
     }
   }, [success]);
 
@@ -82,9 +86,8 @@ const Register = () => {
         }
       );
       console.log(response.data);
-      console.log(response.data.accessToken);
       console.log(JSON.stringify(response));
-      setSuccess(true);
+      setAuth({ email, pwd });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {
