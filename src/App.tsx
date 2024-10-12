@@ -15,8 +15,8 @@ import {
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import { loadState, saveState } from "./redux/browser-storage";
-import Register from "./routes/Register";
-import Login from "./routes/Login";
+import Register from "./components/Auth/Register";
+import Login from "./components/Auth/Login";
 import PrivateRoute from "./routes/PrivateRoute";
 import { AuthProvider } from "./context/AuthProvider";
 import { Button } from "@mui/material";

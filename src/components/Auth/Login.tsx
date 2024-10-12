@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useContext } from "react";
-import AuthContext from "../context/AuthProvider";
-import axios from "../services/backendAPI";
+import AuthContext from "../../context/AuthProvider";
+import axios from "../../services/backendAPI";
 import { AxiosError } from "axios";
 const Login = () => {
   const { setAuth } = useContext(AuthContext);

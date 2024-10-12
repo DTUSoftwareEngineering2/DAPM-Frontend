@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useContext } from "react";
 import { AxiosError } from "axios";
-import axios from "../services/backendAPI";
+import axios from "../../services/backendAPI";
 
 import {
   faCheck,
@@ -8,7 +8,7 @@ import {
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import AuthContext from "../context/AuthProvider";
+import AuthContext from "../../context/AuthProvider";
 
 const Register = () => {
   const { setAuth } = useContext(AuthContext);
