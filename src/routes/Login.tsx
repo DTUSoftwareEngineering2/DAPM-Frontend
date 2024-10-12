@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useContext } from "react";
 import AuthContext from "../context/AuthProvider";
-import axios from "../api/axios";
+import axios from "../services/backendAPI";
 import { AxiosError } from "axios";
 const Login = () => {
   const { setAuth } = useContext(AuthContext);
@@ -40,7 +40,6 @@ const Login = () => {
       setPwd("");
       setSuccess(true);
       console.log(response.data);
-      //TODO change to accestoken
       setAuth({ email, pwd, accesstoken: response.data.accessToken });
     } catch (err) {
       if (err instanceof AxiosError) {

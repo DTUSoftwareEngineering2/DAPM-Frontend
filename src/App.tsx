@@ -80,10 +80,6 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
-  // {
-  //   path: "/hello",
-  //   element: <HelloPage />,
-  // },
 ]);
 
 export default function App() {
