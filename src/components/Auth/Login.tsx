@@ -85,7 +85,7 @@ const Login = () => {
           value={pwd}
           required
         ></input>{" "}
-        <button>Sign In</button>
+        <button disabled={!email || !pwd}>Sign In</button>
       </form>
       <p>
         Need an Account? <br />

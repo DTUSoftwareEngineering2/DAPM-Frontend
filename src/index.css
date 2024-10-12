@@ -130,9 +130,8 @@ body {
   background-color: dodgerblue;
 }
 
-.App {
+.App.section {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -145,17 +144,24 @@ section {
   min-height: 400px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: center;
   padding: 1rem;
   background-color: rgba(0, 0, 0, 0.4);
+  margin: 0 auto;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 8px;
 }
 
 form {
+  width: 100%;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  flex-grow: 1;
-  padding-bottom: 1rem;
+  justify-content: center;
+  align-items: stretch;
 }
 
 a,
