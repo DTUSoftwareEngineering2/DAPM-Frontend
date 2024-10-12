@@ -166,7 +166,7 @@ a:visited {
 input[type="text"],
 input[type="password"],
 button,
-textarea {
+textarea,select {
   font-family: 'Nunito', sans-serif;
   font-size: 22px;
   padding: 0.25rem;

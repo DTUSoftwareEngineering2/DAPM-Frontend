@@ -9,9 +9,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AuthContext from "../../context/AuthProvider";
+import { useAppSelector } from "../../hooks";
+import { getOrganizations } from "../../redux/selectors/apiSelector";
+import { Organization } from "../../redux/states/apiState";
 
 const Register = () => {
   const { setAuth } = useContext(AuthContext);
+  const organizations: Organization[] = useAppSelector(getOrganizations);
 
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const PWD_REGEX = /^(?=.*[a-z])[a-zA-Z0-_]{8,24}$/;
@@ -71,7 +75,7 @@ const Register = () => {
       return;
     }
     console.log(email, pwd);
-    // setSuccess(true);
+    setSuccess(true);
     try {
       const response = await axios.post(
         "Auth/signup",
@@ -169,13 +173,19 @@ const Register = () => {
         />
 
         <label htmlFor="organization">Organization:</label>
-        <input
-          type="text"
+        <select
           id="organization"
-          onChange={(e) => setOrganization(e.target.value)}
           value={organization}
+          onChange={(e) => setOrganization(e.target.value)}
           required
-        />
+        >
+          <option value="">Select organization</option>
+          {organizations.map((org) => (
+            <option key={org.id} value={org.id}>
+              {org.name}
+            </option>
+          ))}
+        </select>
         <label htmlFor="password">
           Password:
           <FontAwesomeIcon
