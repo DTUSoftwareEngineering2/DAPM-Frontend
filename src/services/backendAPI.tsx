@@ -3,13 +3,21 @@ import { Stream } from "stream";
 import { json } from "stream/consumers";
 import axios from "axios";
 
-export default axios.create({
-  baseURL: "http://localhost:5000",
-});
 const vmPath = "se2-c.compute.dtu.dk:5000";
 const localPath = `localhost:5000`;
 
 const path = localPath;
+const BASE_URL = `http://` + path;
+
+export default axios.create({
+  baseURL: BASE_URL,
+});
+
+export const axiosPrivate = axios.create({
+  baseURL: BASE_URL,
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+});
 
 export async function fetchStatus(ticket: string) {
   try {
