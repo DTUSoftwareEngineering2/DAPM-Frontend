@@ -9,12 +9,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AuthContext from "../../context/AuthProvider";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector } from "../../hooks/hooks";
 import { getOrganizations } from "../../redux/selectors/apiSelector";
 import { Organization } from "../../redux/states/apiState";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Register = () => {
   const { setAuth } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
   const organizations: Organization[] = useAppSelector(getOrganizations);
 
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -36,12 +40,9 @@ const Register = () => {
 
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [organization, setOrganization] = useState(
-    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-  );
+  const [organization, setOrganization] = useState("");
 
   const [errMsg, setErrMsg] = useState("");
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     emailRef.current && emailRef.current.focus();
@@ -60,12 +61,6 @@ const Register = () => {
     setErrMsg("");
   }, [email, pwd, matchPwd]);
 
-  useEffect(() => {
-    if (success) {
-      window.location.href = "/";
-    }
-  }, [success]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const v1 = EMAIL_REGEX.test(email);
@@ -75,7 +70,6 @@ const Register = () => {
       return;
     }
     console.log(email, pwd);
-    setSuccess(true);
     try {
       const response = await axios.post(
         "Auth/signup",
@@ -91,8 +85,8 @@ const Register = () => {
         }
       );
       console.log(response.data);
-      console.log(JSON.stringify(response));
-      setAuth({ email, pwd, accesstoken: response.data.accessToken });
+      setAuth({ email, pwd, accessToken: response.data.accessToken });
+      navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {

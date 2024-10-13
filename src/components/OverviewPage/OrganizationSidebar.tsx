@@ -6,7 +6,7 @@ import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
   getOrganizations,
@@ -23,27 +23,14 @@ import {
   Repository,
   Resource,
 } from "../../redux/states/apiState";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { Box, Button } from "@mui/material";
 import ResourceUploadButton from "./Buttons/ResourceUploadButton";
-import {
-  downloadResource,
-  fetchOrganisation,
-  fetchOrganisationRepositories,
-  fetchOrganisations,
-  fetchPipeline,
-  fetchRepositoryPipelines,
-  fetchRepositoryResources,
-  fetchResource,
-  putPipeline,
-  putRepository,
-} from "../../services/backendAPI";
+import { downloadResource } from "../../services/backendAPI";
 import CreateRepositoryButton from "./Buttons/CreateRepositoryButton";
 import AddOrganizationButton from "./Buttons/AddOrganizationButton";
-import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 import OperatorUploadButton from "./Buttons/OperatorUploadButton";
-import { Padding } from "@mui/icons-material";
-import { logout } from "../../context/AuthProvider";
+import AuthContext from "../../context/AuthProvider";
 
 const drawerWidth = 240;
 
@@ -57,6 +44,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 }));
 
 export default function PersistentDrawerLeft() {
+  const { logout } = useContext(AuthContext);
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);

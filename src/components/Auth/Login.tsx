@@ -1,16 +1,20 @@
-import { useRef, useState, useEffect, useContext } from "react";
-import AuthContext from "../../context/AuthProvider";
+import { useRef, useState, useEffect } from "react";
 import axios from "../../services/backendAPI";
 import { AxiosError } from "axios";
+import useAuth from "../../hooks/useAuth";
+import { useNavigate, useLocation } from "react-router-dom";
 const Login = () => {
-  const { setAuth } = useContext(AuthContext);
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
   const emailRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLParagraphElement>(null);
 
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     emailRef.current && emailRef.current.focus();
@@ -20,27 +24,20 @@ const Login = () => {
     setErrMsg("");
   }, [email, pwd]);
 
-  useEffect(() => {
-    if (success) {
-      window.location.href = "/";
-    }
-  }, [success]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const response = await axios.post(
         "Auth/login",
-        JSON.stringify({ email: email, password: pwd }),
+        JSON.stringify({ email, password: pwd }),
         {
           headers: { "Content-Type": "application/json" },
         }
       );
+      setAuth({ email, pwd, accessToken: response.data.accessToken });
       setEmail("");
       setPwd("");
-      setSuccess(true);
-      console.log(response.data);
-      setAuth({ email, pwd, accesstoken: response.data.accessToken });
+      navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {
