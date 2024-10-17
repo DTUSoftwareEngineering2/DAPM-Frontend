@@ -13,6 +13,7 @@ import { getOrganizations, getRepositories } from "../../redux/selectors/apiSele
 import { getHandleId, getNodeId } from "./Flow";
 import { fetchUserInfo } from "../../services/backendAPI";
 import AuthContext from "../../context/AuthProvider";
+import { logout } from "../../context/AuthProvider";
 
 export default function PipelineAppBar() {
   const { auth } = useContext(AuthContext);
@@ -139,17 +140,14 @@ export default function PipelineAppBar() {
 
   interface User {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
     status: string;
     organizationid: number;
     email: string;
   }
 
   const [user, setUser] = useState<User | null>(null);
-
-  const getInitials = (name: string) => {
-    return name.split(" ").map((n) => n[0]).join("").toUpperCase();
-  };
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -170,7 +168,8 @@ export default function PipelineAppBar() {
       const data = await fetchUserInfo(accessToken);
       const updatedUser = {
         id: data.userId,
-        name: data.firstName + " " + data.lastName,
+        firstName: data.firstName,
+        lastName: data.lastName,
         status: "online",
         organizationid: data.organizationId,
         email: data.email,
@@ -180,11 +179,6 @@ export default function PipelineAppBar() {
     } catch (error) {
       console.error('Error fetching user information:', error);
     }
-  };
-
-  const handleLogout = () => {
-    setUser(user ? { ...user, status: 'offline' } : null);
-    setSelectedUser(null);
   };
 
   useEffect(() => {
@@ -214,32 +208,27 @@ export default function PipelineAppBar() {
           )}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
-          <Box
-            key={user?.id}
-            sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
+          <Button
+            className="status-circle"
+            variant="contained"
+            color="info"
             onClick={() => user && handleUserClick(user)}
+            sx={user ? {
+            width: '43px',
+            height: '43px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            minWidth: 'auto',
+            padding: 0,
+            } : {}}
           >
-            <Box
-              className="status-circle"
-              sx={user ? {
-                width: '43px',
-                height: '43px',
-                borderRadius: '50%',
-                backgroundColor:
-                  user?.status === 'online' ? '#4CAF50' :
-                    user?.status === 'away' ? '#FFC107' :
-                      '#F44336',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '16px',
-              } : {}}
-            >
-              {user ? getInitials(user.name) : ''}
-            </Box>
-          </Box>
+            {user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : ''}
+          </Button>
         </Box>
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
@@ -259,12 +248,12 @@ export default function PipelineAppBar() {
             zIndex: 10,
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: '10px' }}> {selectedUser.name}</Typography>
+          <Typography variant="h6" sx={{ marginBottom: '10px' }}> {selectedUser.firstName + " " + selectedUser.lastName}</Typography>
           <Typography variant="body1"><strong>ID :</strong> {selectedUser.id}</Typography>
           <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
           <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
           <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
-          <Button onClick={() => handleLogout()} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
+          <Button onClick={ logout } sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
           <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
         </Box>
       )}
