@@ -265,7 +265,7 @@ export default function PipelineAppBar() {
           <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
           <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
           <Button onClick={() => handleLogout()} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
-          <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Fermer</Button>
+          <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
         </Box>
       )}
     </AppBar>
