@@ -33,7 +33,7 @@ import { fetchUserInfo } from "../../services/backendAPI";
 import AuthContext from "../../context/AuthProvider";
 
 export default function PipelineAppBar() {
-  const { auth } = useContext(AuthContext);
+  const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -212,7 +212,8 @@ export default function PipelineAppBar() {
 
   interface User {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
     status: string;
     organizationid: number;
     email: string;
@@ -220,7 +221,8 @@ export default function PipelineAppBar() {
 
   const [user, setUser] = useState<User>({
     id: 0,
-    name: "NAME",
+    firstName: "NAME",
+    lastName: "NAME",
     status: "STATUS",
     organizationid: 0,
     email: "EM@IL",
@@ -253,7 +255,8 @@ export default function PipelineAppBar() {
       const data = await fetchUserInfo(accessToken);
       const updatedUser = {
         id: data.userId,
-        name: data.firstName + " " + data.lastName,
+        firstName: data.firstName,
+        lastName: data.lastName,
         status: "online",
         organizationid: data.organizationId,
         email: data.email,
@@ -265,7 +268,8 @@ export default function PipelineAppBar() {
       // Default User in case of an error
       setUser({
         id: 1,
-        name: "Alice",
+        firstName: "Alice",
+        lastName: "Alice",
         status: "online",
         organizationid: 101,
         email: "alice@dtu.dk",
@@ -276,7 +280,9 @@ export default function PipelineAppBar() {
   const handleLogout = () => {
     setUser({ ...user, status: "offline" });
     setSelectedUser(null);
+    logout();
   };
+
 
   useEffect(() => {
     fetchAndSetUserInfo();
@@ -337,8 +343,8 @@ export default function PipelineAppBar() {
                   user.status === "online"
                     ? "#4CAF50"
                     : user.status === "away"
-                    ? "#FFC107"
-                    : "#F44336",
+                      ? "#FFC107"
+                      : "#F44336",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -347,7 +353,7 @@ export default function PipelineAppBar() {
                 fontSize: "16px",
               }}
             >
-              {getInitials(user.name)}
+              {getInitials(user.firstName + " " + user.lastName)}
             </Box>
           </Box>
         </Box>
@@ -357,53 +363,55 @@ export default function PipelineAppBar() {
           </Typography>
         </Button>
       </Toolbar>
-      {selectedUser && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: "100px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            backgroundColor: "#202020",
-            padding: "20px",
-            borderRadius: "10px",
-            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
-            zIndex: 10,
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: "10px" }}>
-            {" "}
-            {selectedUser.name}
-          </Typography>
-          <Typography variant="body1">
-            <strong>ID :</strong> {selectedUser.id}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Status :</strong>{" "}
-            {selectedUser.status.charAt(0).toUpperCase() +
-              selectedUser.status.slice(1)}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Organization :</strong> {selectedUser.organizationid}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Email :</strong> {selectedUser.email}
-          </Typography>
-          <Button
-            onClick={() => handleLogout()}
-            sx={{ marginTop: "10px", marginLeft: "10px" }}
-            color="error"
+      {
+        selectedUser && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: "100px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              backgroundColor: "#202020",
+              padding: "20px",
+              borderRadius: "10px",
+              boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+              zIndex: 10,
+            }}
           >
-            Log Out
-          </Button>
-          <Button
-            onClick={() => setSelectedUser(null)}
-            sx={{ marginTop: "10px" }}
-          >
-            Fermer
-          </Button>
-        </Box>
-      )}
-    </AppBar>
+            <Typography variant="h6" sx={{ marginBottom: "10px" }}>
+              {" "}
+              {selectedUser.firstName + " " + selectedUser.lastName}
+            </Typography>
+            <Typography variant="body1">
+              <strong>ID :</strong> {selectedUser.id}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Status :</strong>{" "}
+              {selectedUser.status.charAt(0).toUpperCase() +
+                selectedUser.status.slice(1)}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Organization :</strong> {selectedUser.organizationid}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Email :</strong> {selectedUser.email}
+            </Typography>
+            <Button
+              onClick={() => handleLogout()}
+              sx={{ marginTop: "10px", marginLeft: "10px" }}
+              color="error"
+            >
+              Log Out
+            </Button>
+            <Button
+              onClick={() => setSelectedUser(null)}
+              sx={{ marginTop: "10px" }}
+            >
+              Fermer
+            </Button>
+          </Box >
+        )
+      }
+    </AppBar >
   );
 }
