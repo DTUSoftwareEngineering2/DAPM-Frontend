@@ -296,7 +296,8 @@ export default function PersistentDrawerLeft() {
       >
         Logout
       </Button>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px', position: "fixed", bottom: 0, left: 120 }}>
+      {user ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px', position: "fixed", bottom: 0, left: 120 }}>
         <Button
           key={user?.id}
           variant="contained"
@@ -320,7 +321,8 @@ export default function PersistentDrawerLeft() {
         {user ? user.firstName + " " + user.lastName[0] : ''}
           </Box>
         </Button>
-      </Box>
+      </Box> 
+      ) : null}
       {selectedUser && (
         <Box
           sx={{

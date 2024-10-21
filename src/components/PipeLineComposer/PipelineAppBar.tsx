@@ -207,6 +207,7 @@ export default function PipelineAppBar() {
             </Box>
           )}
         </Box>
+        {user ? (
         <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
           <Button
             className="status-circle"
@@ -230,6 +231,7 @@ export default function PipelineAppBar() {
             {user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : ''}
           </Button>
         </Box>
+        ) : null}
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
         </Button>
