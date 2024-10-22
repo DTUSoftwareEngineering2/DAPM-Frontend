@@ -6,7 +6,7 @@ import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import { useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useSelector } from "react-redux";
 import {
   getOrganizations,
@@ -23,27 +23,16 @@ import {
   Repository,
   Resource,
 } from "../../redux/states/apiState";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { Box, Button } from "@mui/material";
 import ResourceUploadButton from "./Buttons/ResourceUploadButton";
-import {
-  downloadResource,
-  fetchOrganisation,
-  fetchOrganisationRepositories,
-  fetchOrganisations,
-  fetchPipeline,
-  fetchRepositoryPipelines,
-  fetchRepositoryResources,
-  fetchResource,
-  putPipeline,
-  putRepository,
-} from "../../services/backendAPI";
+import { downloadResource } from "../../services/backendAPI";
 import CreateRepositoryButton from "./Buttons/CreateRepositoryButton";
 import AddOrganizationButton from "./Buttons/AddOrganizationButton";
-import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 import OperatorUploadButton from "./Buttons/OperatorUploadButton";
 import { Padding } from "@mui/icons-material";
-import { logout } from "../../context/AuthProvider";
+import AuthContext from "../../context/AuthProvider";
+import { User, getUserInfo } from "../../redux/userStatus"
 
 const drawerWidth = 240;
 
@@ -57,6 +46,8 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 }));
 
 export default function PersistentDrawerLeft() {
+  const { auth, logout } = useContext(AuthContext);
+
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -80,6 +71,16 @@ export default function PersistentDrawerLeft() {
   async function downloadReadableStream(url: string, fileName: string) {
     window.open(url, "_blank");
   }
+
+  const [user, setUser] = useState<User | null>(null);
+
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (auth?.accessToken) {
+      getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
+    }
+  }, []);
 
   return (
     <Drawer
@@ -163,7 +164,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map((resource) =>
                     resource.repositoryId === repository.id &&
-                    resource.type !== "operator" ? (
+                      resource.type !== "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton
@@ -199,7 +200,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map((resource) =>
                     resource.repositoryId === repository.id &&
-                    resource.type === "operator" ? (
+                      resource.type === "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton sx={{ paddingBlock: 0 }}>
@@ -243,6 +244,55 @@ export default function PersistentDrawerLeft() {
       >
         Logout
       </Button>
+      {user ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px', position: "fixed", bottom: 0, left: 120 }}>
+          <Button
+            key={user?.id}
+            variant="contained"
+            color="info"
+            sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
+            onClick={() => user && setSelectedUser(user)}
+          >
+            <Box
+              className="status-rectangle"
+              sx={user ? {
+                width: '87px',
+                height: '33.5px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '16px'
+              } : {}}
+            >
+              {user ? user.firstName + " " + user.lastName[0] : ''}
+            </Box>
+          </Button>
+        </Box>
+      ) : null}
+      {selectedUser && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#606060',
+            padding: '20px',
+            borderRadius: '10px',
+            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+            zIndex: 10,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: '10px' }}> {selectedUser.firstName + " " + selectedUser.lastName}</Typography>
+          <Typography variant="body1"><strong>ID :</strong> {selectedUser.id}</Typography>
+          <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
+          <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
+          <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
+          <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
+        </Box>
+      )}
     </Drawer>
   );
 }

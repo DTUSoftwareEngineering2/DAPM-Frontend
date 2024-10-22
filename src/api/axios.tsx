@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export default axios.create({
-  baseURL: "http://se2-c.compute.dtu.dk:5000",
+  baseURL: "http://localhost:5001",
 });
