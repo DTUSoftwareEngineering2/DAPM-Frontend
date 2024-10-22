@@ -218,6 +218,7 @@ export default function PipelineAppBar() {
   const [user, setUser] = useState<User | null>(null);
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
   useEffect(() => {
     if (auth?.accessToken) {
       getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
@@ -256,60 +257,119 @@ export default function PipelineAppBar() {
             </Box>
           )}
         </Box>
-        {user ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
-            <Button
-              className="status-circle"
-              variant="contained"
-              color="info"
-              onClick={() => user && setSelectedUser(user)}
-              sx={user ? {
-                width: '43px',
-                height: '43px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '16px',
-                minWidth: 'auto',
-                padding: 0,
-              } : {}}
-            >
-              {user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : ''}
-            </Button>
-          </Box>
-        ) : null}
+        < Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
+          <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
+            <Typography variant="body1" sx={{ color: "white" }}>Show Status</Typography>
+          </Button>
+          {user ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
+              <Button
+                className="status-circle"
+                variant="contained"
+                color="info"
+                onClick={() => user && setSelectedUser(user)}
+                sx={user ? {
+                  width: '43px',
+                  height: '43px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  minWidth: 'auto',
+                  padding: 0,
+                } : {}}
+              >
+                {user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : ''}
+              </Button>
+            </Box>
+          ) : null}
+        </Box>
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>
             Deploy pipeline
           </Typography>
         </Button>
       </Toolbar >
-      {selectedUser && (
+
+      {/* Status Table Modal */}
+      <Modal
+        open={isTableOpen}
+        onClose={handleCloseTable}
+        aria-labelledby="status-table-modal"
+        aria-describedby="status-table-description"
+      >
         <Box
           sx={{
             position: 'absolute',
-            top: '100px',
+            top: '50%',
             left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#202020',
-            padding: '20px',
-            borderRadius: '10px',
-            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-            zIndex: 10,
+            transform: 'translate(-50%, -50%)',
+            width: '80%',
+            maxWidth: 600,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: '10px' }}> {selectedUser.firstName + " " + selectedUser.lastName}</Typography>
-          <Typography variant="body1"><strong>ID :</strong> {selectedUser.id}</Typography>
-          <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
-          <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
-          <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
-          <Button onClick={logout} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
-          <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
+          <Typography id="status-table-modal" variant="h6" component="h2" sx={{ mb: 2 }}>
+            Pipeline Status
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Not running</TableCell>
+                  <TableCell>Running</TableCell>
+                  <TableCell>Completed</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    {/* Add content for 'Not running' column */}
+                  </TableCell>
+                  <TableCell>
+                    {/* Add content for 'Running' column */}
+                  </TableCell>
+                  <TableCell>
+                    {/* Add content for 'Completed' column */}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Button onClick={handleCloseTable} sx={{ mt: 2 }}>Close</Button>
         </Box>
-      )
+      </Modal >
+
+      {
+        selectedUser && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '100px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: '#202020',
+              padding: '20px',
+              borderRadius: '10px',
+              boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+              zIndex: 10,
+            }}
+          >
+            <Typography variant="h6" sx={{ marginBottom: '10px' }}> {selectedUser.firstName + " " + selectedUser.lastName}</Typography>
+            <Typography variant="body1"><strong>ID :</strong> {selectedUser.id}</Typography>
+            <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
+            <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
+            <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
+            <Button onClick={logout} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
+            <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
+          </Box>
+        )
       }
     </AppBar >
   );
