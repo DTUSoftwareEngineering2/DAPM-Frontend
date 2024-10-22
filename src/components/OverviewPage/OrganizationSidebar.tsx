@@ -7,7 +7,6 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import { useState, useEffect, useContext } from "react";
-import { fetchUserInfo } from "../../services/backendAPI";
 import { useSelector } from "react-redux";
 import {
   getOrganizations,
@@ -46,6 +45,7 @@ import OperatorUploadButton from "./Buttons/OperatorUploadButton";
 import { Padding } from "@mui/icons-material";
 import { logout } from "../../context/AuthProvider";
 import AuthContext from "../../context/AuthProvider";
+import { User, getUserInfo } from "../../redux/userStatus"
 
 const drawerWidth = 240;
 
@@ -85,53 +85,14 @@ export default function PersistentDrawerLeft() {
     window.open(url, "_blank");
   }
 
-  // USER STATUS
-
-  interface User {
-    id: number;
-    firstName: string;
-    lastName: string;
-    status: string;
-    organizationid: number;
-    email: string;
-  }
-
   const [user, setUser] = useState<User | null>(null);
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const handleUserClick = (user: User) => {
-    setSelectedUser(user);
-    fetchAndSetUserInfo()
-  };
-
-  const fetchAndSetUserInfo = async () => {
-    try {
-      var accessToken = "";
-      if (auth?.accesstoken) {
-        accessToken = auth.accesstoken;
-      }
-      console.log("USER TOCKET");
-      console.log(auth.accesstoken);
-
-      const data = await fetchUserInfo(accessToken);
-      const updatedUser = {
-        id: data.userId,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        status: "online",
-        organizationid: data.organizationId,
-        email: data.email,
-      };
-      console.log(data);
-      setUser(updatedUser);
-    } catch (error) {
-      console.error('Error fetching user information:', error);
-    }
-  };
-
   useEffect(() => {
-    fetchAndSetUserInfo();
+    if (auth?.accesstoken) {
+      getUserInfo(auth.accesstoken).then(userInfo => setUser(userInfo));
+    }
   }, []);
 
   return (
@@ -303,7 +264,7 @@ export default function PersistentDrawerLeft() {
           variant="contained"
           color="info"
           sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
-          onClick={() => user && handleUserClick(user)}
+          onClick={() => user && setSelectedUser(user)}
         >
           <Box
         className="status-rectangle"
