@@ -5,7 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { CardActionArea, Box } from '@mui/material';
+import { CardActionArea, Box, Grid } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -37,13 +37,29 @@ export default function MediaCard({ id, name, imgData, status, output }: Pipelin
     switch (status.toLowerCase()) {
       case 'completed':
         return '#4caf50'; // Green
-      case 'faulted':
+      case 'faulty':
         return '#f44336'; // Red
       case 'running':
         return '#ff9800'; // Orange
       default:
         return '#9e9e9e'; // Grey
     }
+  };
+
+  const getLighterColor = (hex: string, percent: number): string => {
+    // Convert hex to RGB
+    let num = parseInt(hex.slice(1), 16);
+    let r = (num >> 16) + Math.round((255 - (num >> 16)) * percent);
+    let g = ((num >> 8) & 0x00FF) + Math.round((255 - ((num >> 8) & 0x00FF)) * percent);
+    let b = (num & 0x0000FF) + Math.round((255 - (num & 0x0000FF)) * percent);
+  
+    // Clamp RGB values to stay within 0-255
+    r = Math.min(255, Math.max(0, r));
+    g = Math.min(255, Math.max(0, g));
+    b = Math.min(255, Math.max(0, b));
+  
+    // Convert back to hex and return
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
   };
 
   const handleDialogOpen = (event: React.MouseEvent) => {
@@ -74,20 +90,6 @@ export default function MediaCard({ id, name, imgData, status, output }: Pipelin
           image={imgData}
         />
         <CardContent>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 12,
-              left: 12,
-              width: 15,
-              height: 15,
-              borderRadius: '50%',
-              backgroundColor: getStatusColor(status),
-              border: '2px solid white',
-              boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
-              zIndex: 2,
-            }}
-          />
           <Typography gutterBottom variant="h5" component="div">
             {name}
           </Typography>
@@ -96,14 +98,24 @@ export default function MediaCard({ id, name, imgData, status, output }: Pipelin
           </Typography>
         </CardContent>
 
-        {/* Conditional rendering of the smaller ("View Output") button */}
-        {(status === 'faulty' || status === 'completed') && (
-          <CardActions sx={{ justifyContent: 'flex-end' }}>
+        <CardActions sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              width: 25,
+              height: 25,
+              borderRadius: '50%',
+              backgroundColor: getStatusColor(status),
+              border: `2.5px solid ${getLighterColor(getStatusColor(status), 0.7)}`, 
+              boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
+              zIndex: 2,
+            }}
+          />
+          {(status === 'faulty' || status === 'completed') && (
             <Button size="small" color="primary" onClick={handleDialogOpen}>
               View Output
             </Button>
-          </CardActions>
-        )}
+          )}
+        </CardActions>
       </CardActionArea>
 
       {/* Dialog to display the pipeline's output */}

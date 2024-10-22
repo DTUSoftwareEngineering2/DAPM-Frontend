@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiState, Organization, Repository, Resource } from "../states/apiState";
 import { fetchOrganisationRepositories, fetchOrganisations, fetchRepository, fetchRepositoryResources } from "../../services/backendAPI";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector } from "../../hooks/hooks";
 import { getOrganizations } from "../selectors/apiSelector";
 
 

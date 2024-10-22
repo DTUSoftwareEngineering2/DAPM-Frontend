@@ -1,16 +1,25 @@
 import { useRef, useState, useEffect, useContext } from "react";
-import axios from "../api/axios";
 import { AxiosError } from "axios";
+import axios from "../../services/backendAPI";
+
 import {
   faCheck,
   faTimes,
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import AuthContext from "../context/AuthProvider";
+import AuthContext from "../../context/AuthProvider";
+import { useAppSelector } from "../../hooks/hooks";
+import { getOrganizations } from "../../redux/selectors/apiSelector";
+import { Organization } from "../../redux/states/apiState";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Register = () => {
   const { setAuth } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+  const organizations: Organization[] = useAppSelector(getOrganizations);
 
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const PWD_REGEX = /^(?=.*[a-z])[a-zA-Z0-_]{8,24}$/;
@@ -31,12 +40,9 @@ const Register = () => {
 
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [organization, setOrganization] = useState(
-    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-  );
+  const [organization, setOrganization] = useState("");
 
   const [errMsg, setErrMsg] = useState("");
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     emailRef.current && emailRef.current.focus();
@@ -55,12 +61,6 @@ const Register = () => {
     setErrMsg("");
   }, [email, pwd, matchPwd]);
 
-  useEffect(() => {
-    if (success) {
-      window.location.href = "/";
-    }
-  }, [success]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const v1 = EMAIL_REGEX.test(email);
@@ -70,7 +70,6 @@ const Register = () => {
       return;
     }
     console.log(email, pwd);
-    // setSuccess(true);
     try {
       const response = await axios.post(
         "Auth/signup",
@@ -86,8 +85,8 @@ const Register = () => {
         }
       );
       console.log(response.data);
-      console.log(JSON.stringify(response));
-      setAuth({ email, pwd, accesstoken: response.data.accessToken });
+      setAuth({ email, pwd, accessToken: response.data.accessToken });
+      navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {
@@ -168,13 +167,19 @@ const Register = () => {
         />
 
         <label htmlFor="organization">Organization:</label>
-        <input
-          type="text"
+        <select
           id="organization"
-          onChange={(e) => setOrganization(e.target.value)}
           value={organization}
+          onChange={(e) => setOrganization(e.target.value)}
           required
-        />
+        >
+          <option value="">Select organization</option>
+          {organizations.map((org) => (
+            <option key={org.id} value={org.id}>
+              {org.name}
+            </option>
+          ))}
+        </select>
         <label htmlFor="password">
           Password:
           <FontAwesomeIcon
