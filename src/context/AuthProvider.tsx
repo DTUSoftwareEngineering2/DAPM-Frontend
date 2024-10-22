@@ -1,15 +1,11 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 type AuthContextType = {
-  auth: { email?: string; pwd?: string; accesstoken?: string };
+  auth: { email?: string; pwd?: string; accessToken?: string };
   setAuth: React.Dispatch<
-    React.SetStateAction<{ email?: string; pwd?: string; accesstoken?: string }>
+    React.SetStateAction<{ email?: string; pwd?: string; accessToken?: string }>
   >;
-};
-
-export const logout = () => {
-  localStorage.removeItem("auth");
-  window.location.href = "/login";
+  logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -18,24 +14,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [auth, setAuth] = useState<{
     email?: string;
     pwd?: string;
-    accesstoken?: string;
-  }>(() => {
-    // Load auth data from localStorage if it exists
-    const storedAuth = localStorage.getItem("auth");
-    return storedAuth ? JSON.parse(storedAuth) : {};
-  });
+    accessToken?: string;
+  }>({});
+
+  const logout = () => {
+    setAuth({});
+    window.location.href = "/login";
+  };
 
   useEffect(() => {
-    // Store auth data in localStorage whenever it changes
-    if (auth?.pwd) {
-      localStorage.setItem("auth", JSON.stringify(auth));
-    } else {
-      localStorage.removeItem("auth");
-    }
+    console.log("Auth state updated:", auth);
   }, [auth]);
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth }}>
+    <AuthContext.Provider value={{ auth, setAuth, logout }}>
       {children}
     </AuthContext.Provider>
   );
