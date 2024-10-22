@@ -11,9 +11,9 @@ import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../re
 import { putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
-import { fetchUserInfo } from "../../services/backendAPI";
 import AuthContext from "../../context/AuthProvider";
 import { logout } from "../../context/AuthProvider";
+import { User, getUserInfo } from "../../redux/userStatus"
 
 export default function PipelineAppBar() {
   const { auth } = useContext(AuthContext);
@@ -136,53 +136,14 @@ export default function PipelineAppBar() {
 
   }
 
-  // USER STATUS
-
-  interface User {
-    id: number;
-    firstName: string;
-    lastName: string;
-    status: string;
-    organizationid: number;
-    email: string;
-  }
-
   const [user, setUser] = useState<User | null>(null);
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const handleUserClick = (user: User) => {
-    setSelectedUser(user);
-    fetchAndSetUserInfo()
-  };
-
-  const fetchAndSetUserInfo = async () => {
-    try {
-      var accessToken = "";
-      if (auth?.accesstoken) {
-        accessToken = auth.accesstoken;
-      }
-      console.log("USER TOCKET");
-      console.log(auth.accesstoken);
-
-      const data = await fetchUserInfo(accessToken);
-      const updatedUser = {
-        id: data.userId,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        status: "online",
-        organizationid: data.organizationId,
-        email: data.email,
-      };
-      console.log(data);
-      setUser(updatedUser);
-    } catch (error) {
-      console.error('Error fetching user information:', error);
-    }
-  };
-
   useEffect(() => {
-    fetchAndSetUserInfo();
+    if (auth?.accesstoken) {
+      getUserInfo(auth.accesstoken).then(userInfo => setUser(userInfo));
+    }
   }, []);
 
   return (
@@ -213,7 +174,7 @@ export default function PipelineAppBar() {
             className="status-circle"
             variant="contained"
             color="info"
-            onClick={() => user && handleUserClick(user)}
+            onClick={() => user && setSelectedUser(user)}
             sx={user ? {
             width: '43px',
             height: '43px',
