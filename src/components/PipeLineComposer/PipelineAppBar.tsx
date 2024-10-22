@@ -1,9 +1,9 @@
-import { AppBar, Box, Button, TextField, Toolbar, Typography } from "@mui/material";
+import {AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper} from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
-import { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import EditIcon from '@mui/icons-material/Edit';
 import { Node } from "reactflow";
@@ -14,12 +14,25 @@ import { getHandleId, getNodeId } from "./Flow";
 import { fetchUserInfo } from "../../services/backendAPI";
 import AuthContext from "../../context/AuthProvider";
 
+// Table columns data
+const tableColumns = ["Not running", "Running", "Completed"];
+
 export default function PipelineAppBar() {
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [isEditing, setIsEditing] = useState(false);
+
+  const [isTableOpen, setIsTableOpen] = useState(false);
+
+  const toggleTable = () => {
+    setIsTableOpen((prev) => !prev);
+  };
+
+  const handleCloseTable = () => {
+    setIsTableOpen(false);
+  };
 
   const handleStartEditing = () => {
     setIsEditing(true);
@@ -228,6 +241,9 @@ export default function PipelineAppBar() {
           )}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
+        <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
+          <Typography variant="body1" sx={{ color: "white" }}>Show Status</Typography>
+        </Button>
           <Box
             key={user.id}
             sx={{ display: 'flex', alignItems: 'center', marginRight: '15px', cursor: 'pointer' }}
@@ -259,6 +275,59 @@ export default function PipelineAppBar() {
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
         </Button>
       </Toolbar>
+
+      {/* Status Table Modal */}
+      <Modal
+        open={isTableOpen}
+        onClose={handleCloseTable}
+        aria-labelledby="status-table-modal"
+        aria-describedby="status-table-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80%',
+            maxWidth: 600,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography id="status-table-modal" variant="h6" component="h2" sx={{ mb: 2 }}>
+            Pipeline Status
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Not running</TableCell>
+                  <TableCell>Running</TableCell>
+                  <TableCell>Completed</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    {/* Add content for 'Not running' column */}
+                  </TableCell>
+                  <TableCell>
+                    {/* Add content for 'Running' column */}
+                  </TableCell>
+                  <TableCell>
+                    {/* Add content for 'Completed' column */}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Button onClick={handleCloseTable} sx={{ mt: 2 }}>Close</Button>
+        </Box>
+      </Modal>
+
       {selectedUser && (
         <Box
           sx={{
