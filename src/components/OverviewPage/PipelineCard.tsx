@@ -19,7 +19,7 @@ export interface PipelineCardProps {
   id: string;
   name: string;
   imgData: string;
-  status: 'not started' | 'running' | 'faulty' | 'completed';
+  status: string;
   output: string; // Pipeline output text
 }
 

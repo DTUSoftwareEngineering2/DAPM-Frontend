@@ -19,6 +19,26 @@ export const axiosPrivate = axios.create({
   withCredentials: true,
 });
 
+export async function fetchPipelineStatus(
+  pipId: string
+) {
+  try {
+      const url = `http://` + path + `/api/pipeline-status/pipelineId=${pipId}`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+
+      const status = await response.text(); // Since 'accept: text/plain', we use response.text()
+      return status;
+  } catch (error) {
+      console.error('Error fetching pipeline output:', error);
+      throw error;
+  }
+}
+
 export async function fetchPipelineOutput(
   orgId: string,
   repositoryName: string,
@@ -26,9 +46,9 @@ export async function fetchPipelineOutput(
   pipId: string
 ) {
   try {
-      const url = 'http:// + path + /organizations/GetAllResults?' + 
-                  'organizationId=${orgId}&repositoryId=${repositoryName}&' +
-                  'resourceId=${resourceId}&pipelineId=${pipId}';
+      const url = `http://` + path + `/organizations/GetAllResults?` + 
+                  `organizationId=${orgId}&repositoryId=${repositoryName}&` +
+                  `resourceId=${resourceId}&pipelineId=${pipId}`;
 
       const response = await fetch(url, {
           method: 'GET',

@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { Resource } from "../../redux/states/apiState";
 import { DataSourceNodeData, PipelineData } from "../../redux/states/pipelineState";
 import { Node } from "reactflow";
-import { fetchPipelineOutput } from "../../services/backendAPI";
+import { fetchPipelineOutput, fetchPipelineStatus } from "../../services/backendAPI";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -38,6 +38,7 @@ export default function AutoGrid() {
   const organizations = useSelector(getOrganizations)
   const repos = useSelector(getRepositories)
   const [pipelineOutputs, setPipelineOutputs] = useState<{ [key: string]: string }>({});
+  const [pipelineStatuses, setPipelineStatuses] = useState<{ [key: string]: string }>({});
 
   const getPipelineResource = (pipeline: PipelineData): Resource | undefined => {
     // Get the nodes from the pipeline
@@ -75,28 +76,38 @@ export default function AutoGrid() {
   }
 
   useEffect(() => {
-    const fetchOutputs = async () => {
+    const fetchData = async () => {
       const outputs: { [key: string]: string } = {};
+      const statuses: { [key: string]: string } = {};
+      
       for (const pipeline of pipelines) {
         try {
+          // Fetch pipeline output
           const resource = getPipelineResource(pipeline);
           if (resource) {
-            const data = await fetchPipelineOutput(
+            const outputData = await fetchPipelineOutput(
               getPipelineOrgId(pipeline),
               getPipelineRepoName(getPipelineRepoId(pipeline)),
               resource.id,
               pipeline.id
             );
-            outputs[pipeline.id] = data || "No output available";
+            outputs[pipeline.id] = outputData || "No output available";
           }
+
+          // Fetch pipeline status
+          const statusData = await fetchPipelineStatus(pipeline.id);
+          statuses[pipeline.id] = statusData || "unknown";
         } catch (error) {
-          console.error(`Error fetching output for pipeline ${pipeline.id}:`, error);
-          outputs[pipeline.id] = error + "Error fetching output";
+          console.error(`Error fetching data for pipeline ${pipeline.id}:`, error);
+          outputs[pipeline.id] = "Error fetching output";
+          statuses[pipeline.id] = "error";
         }
       }
       setPipelineOutputs(outputs);
+      setPipelineStatuses(statuses);
     };
-    fetchOutputs();
+
+    fetchData();
   }, [pipelines]); // Re-fetch when pipelines change
 
   const createNewPipeline = () => {
@@ -182,7 +193,7 @@ export default function AutoGrid() {
               id={p.id}
               name={p.name}
               imgData={p.imgData}
-              status={"completed"}
+              status={pipelineStatuses[p.id] || "unknown"}
               output={pipelineOutputs[p.id] || "Data not ready"}
             ></PipelineCard>
           </Grid>
