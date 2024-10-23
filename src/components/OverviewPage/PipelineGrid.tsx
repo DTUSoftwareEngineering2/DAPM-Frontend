@@ -14,6 +14,12 @@ import ReactDOM from "react-dom";
 import { toPng } from "html-to-image";
 import { getNodesBounds, getViewportForBounds } from "reactflow";
 import { v4 as uuidv4 } from "uuid";
+import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
+import { useEffect, useState } from "react";
+import { Resource } from "../../redux/states/apiState";
+import { DataSourceNodeData, PipelineData } from "../../redux/states/pipelineState";
+import { Node } from "reactflow";
+import { fetchPipelineOutput } from "../../services/backendAPI";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -29,6 +35,69 @@ export default function AutoGrid() {
   const dispatch = useDispatch();
 
   const pipelines = useSelector(getPipelines);
+  const organizations = useSelector(getOrganizations)
+  const repos = useSelector(getRepositories)
+  const [pipelineOutputs, setPipelineOutputs] = useState<{ [key: string]: string }>({});
+
+  const getPipelineResource = (pipeline: PipelineData): Resource | undefined => {
+    // Get the nodes from the pipeline
+    const nodes = pipeline.pipeline.nodes;
+    
+    // Find the first node that has DataSourceNodeData
+    const dataSourceNode = nodes.find((node): node is Node<DataSourceNodeData> => {
+      const nodeData = node.data;
+      // Check if the node data has the structure of DataSourceNodeData
+      return (
+        'templateData' in nodeData &&
+        'instantiationData' in nodeData &&
+        'resourceType' in nodeData.templateData &&
+        'resource' in nodeData.instantiationData
+      );
+    });
+  
+    // Return the resource if found
+    return dataSourceNode?.data.instantiationData.resource;
+  };
+
+  const getPipelineRepoId = (pipeline: PipelineData) => {
+    const id : string = (getPipelineResource(pipeline)?.repositoryId)!
+    return id
+  }
+
+  const getPipelineRepoName = (repoId: string) => {
+    const name : string = (repos.find(r => r.id == repoId)?.name)!
+    return name
+  }
+
+  const getPipelineOrgId = (pipeline: PipelineData) => {
+    const id : string = (getPipelineResource(pipeline)?.organizationId)!
+    return id
+  }
+
+  useEffect(() => {
+    const fetchOutputs = async () => {
+      const outputs: { [key: string]: string } = {};
+      for (const pipeline of pipelines) {
+        try {
+          const resource = getPipelineResource(pipeline);
+          if (resource) {
+            const data = await fetchPipelineOutput(
+              getPipelineOrgId(pipeline),
+              getPipelineRepoName(getPipelineRepoId(pipeline)),
+              resource.id,
+              pipeline.id
+            );
+            outputs[pipeline.id] = data || "No output available";
+          }
+        } catch (error) {
+          console.error(`Error fetching output for pipeline ${pipeline.id}:`, error);
+          outputs[pipeline.id] = error + "Error fetching output";
+        }
+      }
+      setPipelineOutputs(outputs);
+    };
+    fetchOutputs();
+  }, [pipelines]); // Re-fetch when pipelines change
 
   const createNewPipeline = () => {
     dispatch(
@@ -107,14 +176,14 @@ export default function AutoGrid() {
         Create New
       </Button>
       <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: "10px" }}>
-        {pipelines.map(({ id, name, imgData }) => (
+        {pipelines.map((p) => (
           <Grid item xs={12} sm={6} md={4} lg={3} xl={3}>
             <PipelineCard
-              id={id}
-              name={name}
-              imgData={imgData}
+              id={p.id}
+              name={p.name}
+              imgData={p.imgData}
               status={"completed"}
-              output={"placeholder for the pipeline output"}
+              output={pipelineOutputs[p.id] || "Data not ready"}
             ></PipelineCard>
           </Grid>
         ))}

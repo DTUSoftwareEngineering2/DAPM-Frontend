@@ -19,6 +19,36 @@ export const axiosPrivate = axios.create({
   withCredentials: true,
 });
 
+export async function fetchPipelineOutput(
+  orgId: string,
+  repositoryName: string,
+  resourceId: string,
+  pipId: string
+) {
+  try {
+      const url = 'http:// + path + /organizations/GetAllResults?' + 
+                  'organizationId=${orgId}&repositoryId=${repositoryName}&' +
+                  'resourceId=${resourceId}&pipelineId=${pipId}';
+
+      const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+              'Accept': 'text/plain', // This matches the 'accept' header in the curl command
+          },
+      });
+
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+
+      const data = await response.text(); // Since 'accept: text/plain', we use response.text()
+      return data;
+  } catch (error) {
+      console.error('Error fetching pipeline output:', error);
+      throw error;
+  }
+}
+
 export async function fetchStatus(ticket: string) {
   try {
     const response = await fetch(`http://` + path + `/status/${ticket}`);

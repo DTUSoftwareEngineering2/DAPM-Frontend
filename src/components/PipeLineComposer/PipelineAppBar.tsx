@@ -258,9 +258,6 @@ export default function PipelineAppBar() {
           )}
         </Box>
         < Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
-          <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
-            <Typography variant="body1" sx={{ color: "white" }}>Show Status</Typography>
-          </Button>
           {user ? (
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
               <Button
@@ -287,6 +284,9 @@ export default function PipelineAppBar() {
             </Box>
           ) : null}
         </Box>
+        <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
+            <Typography variant="body1" sx={{ color: "white" }}>Show Status</Typography>
+          </Button>
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>
             Deploy pipeline
