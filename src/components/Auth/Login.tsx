@@ -35,6 +35,7 @@ const Login = () => {
         }
       );
       setAuth({ email, pwd, accessToken: response.data.accessToken });
+      localStorage.setItem("accessToken", response.data.accessToken);
       setEmail("");
       setPwd("");
       navigate(from, { replace: true });

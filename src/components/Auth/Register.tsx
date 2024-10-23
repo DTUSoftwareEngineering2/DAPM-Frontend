@@ -1,21 +1,20 @@
 import { useRef, useState, useEffect, useContext } from "react";
 import { AxiosError } from "axios";
 import axios from "../../services/backendAPI";
-
+import useAuth from "../../hooks/useAuth";
 import {
   faCheck,
   faTimes,
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import AuthContext from "../../context/AuthProvider";
 import { useAppSelector } from "../../hooks/hooks";
 import { getOrganizations } from "../../redux/selectors/apiSelector";
 import { Organization } from "../../redux/states/apiState";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const Register = () => {
-  const { setAuth } = useContext(AuthContext);
+  const { setAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
@@ -84,9 +83,9 @@ const Register = () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      console.log(response.data);
-      setAuth({ email, pwd, accessToken: response.data.accessToken });
-      navigate(from, { replace: true });
+      // setAuth({ email, pwd, accessToken: response.data.accessToken });
+      // localStorage.setItem("accessToken", response.data.accessToken);
+      navigate("/login", { replace: true });
     } catch (err) {
       if (err instanceof AxiosError) {
         if (!err?.response) {
