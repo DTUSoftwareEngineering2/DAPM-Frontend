@@ -15,14 +15,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email?: string;
     pwd?: string;
     accessToken?: string;
-  }>({});
+  }>(() => {
+    const savedToken = localStorage.getItem("accessToken");
+    return savedToken ? { accessToken: savedToken } : {};
+  });
 
   const logout = () => {
     setAuth({});
+    localStorage.removeItem("accessToken");
     window.location.href = "/login";
   };
 
   useEffect(() => {
+    if (auth.accessToken) {
+      localStorage.setItem("accessToken", auth.accessToken);
+    }
     console.log("Auth state updated:", auth);
   }, [auth]);
 
