@@ -26,7 +26,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { Box, Button } from "@mui/material";
 import ResourceUploadButton from "./Buttons/ResourceUploadButton";
-import { downloadResource } from "../../services/backendAPI";
+import { downloadResource, fetchUsers } from "../../services/backendAPI";
 import CreateRepositoryButton from "./Buttons/CreateRepositoryButton";
 import AddOrganizationButton from "./Buttons/AddOrganizationButton";
 import OperatorUploadButton from "./Buttons/OperatorUploadButton";
@@ -76,6 +76,17 @@ export default function PersistentDrawerLeft() {
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  const [users, setUsers] = useState<User[]>([]);
+  const [showUsers, setShowUsers] = useState(false);
+
+  // Toggle display of users and fetch them if needed
+  const handleShowUsers = () => {
+    if (!showUsers) {
+      fetchUsers().then((fetchedUsers) => setUsers(fetchedUsers));
+    }
+    setShowUsers(!showUsers);
+  };
+
   useEffect(() => {
     if (auth?.accessToken) {
       getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
@@ -102,17 +113,36 @@ export default function PersistentDrawerLeft() {
       anchor="left"
     >
       <Divider />
-      <DrawerHeader>
-        <Typography
-          sx={{ width: "100%", textAlign: "center" }}
-          variant="h6"
-          noWrap
-          component="div"
-        >
-          Organisations
-        </Typography>
-        <AddOrganizationButton />
-      </DrawerHeader>
+      <Typography
+        sx={{ width: "100%", textAlign: "center", marginTop: '20px' }}
+        variant="h6"
+        noWrap
+        component="div"
+      >
+        Organisations
+      </Typography>
+      <Button
+        onClick={handleShowUsers}
+        variant="contained"
+        color="primary"
+        sx={{ margin: '10px' }}
+      >
+        {showUsers ? 'Hide Users' : 'Show All Users'}
+      </Button>
+      {showUsers && (
+        <List>
+          {users.map((user) => (
+            <ListItem key={user.id} disablePadding>
+              <ListItemButton onClick={() => setSelectedUser(user)}>
+                <ListItemText
+                  primary={`${user.firstName} ${user.lastName}`}
+                  secondary={`Role: ${user.role}`}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      )}
       <List>
         {organizations.map((organization) => (
           <>
@@ -164,7 +194,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map((resource) =>
                     resource.repositoryId === repository.id &&
-                      resource.type !== "operator" ? (
+                    resource.type !== "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton
@@ -200,7 +230,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map((resource) =>
                     resource.repositoryId === repository.id &&
-                      resource.type === "operator" ? (
+                    resource.type === "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton sx={{ paddingBlock: 0 }}>
@@ -296,4 +326,4 @@ export default function PersistentDrawerLeft() {
       )}
     </Drawer>
   );
-}
+};
