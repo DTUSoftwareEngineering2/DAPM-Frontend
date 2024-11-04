@@ -366,6 +366,7 @@ export default function PipelineAppBar() {
             <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
             <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
             <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
+            <Typography variant="body1"><strong>Role :</strong> {selectedUser.role}</Typography>
             <Button onClick={logout} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
             <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
           </Box>

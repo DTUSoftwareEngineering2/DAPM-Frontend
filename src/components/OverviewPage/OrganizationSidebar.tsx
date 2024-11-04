@@ -290,6 +290,7 @@ export default function PersistentDrawerLeft() {
           <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
           <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
           <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
+          <Typography variant="body1"><strong>Role :</strong> {selectedUser.role}</Typography>
           <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
         </Box>
       )}
