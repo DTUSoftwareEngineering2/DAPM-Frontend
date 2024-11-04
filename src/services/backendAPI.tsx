@@ -834,6 +834,8 @@ export async function fetchUserInfo(accessToken: string) {
       lastName: userInfo.lastName,
       organizationId: userInfo.organization,
       email: userInfo.mail,
+      role: userInfo.userRole,
+      accepted: userInfo.accepted
     };
   } catch (error) {
     console.error("Error fetching user info:", error);

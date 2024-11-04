@@ -7,6 +7,8 @@ export interface User {
     status: string;
     organizationid: number;
     email: string;
+    role: number;
+    accepted: number;
   }
 
 export const getUserInfo = async (accessToken: string): Promise<User | null> => {
@@ -26,6 +28,8 @@ export const getUserInfo = async (accessToken: string): Promise<User | null> => 
       status: "online",
       organizationid: data.organizationId,
       email: data.email,
+      role: data.role,
+      accepted: data.accepted
     };
     console.log(data);
     return updatedUser;
