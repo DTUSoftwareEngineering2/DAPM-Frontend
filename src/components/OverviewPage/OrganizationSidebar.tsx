@@ -84,6 +84,41 @@ export default function PersistentDrawerLeft() {
     if (!showUsers && auth?.accessToken) {
       fetchUsers(auth.accessToken).then((fetchedUsers) => {
         // Check if fetchedUsers has a 'data' property that contains the users array
+        
+        // const fetchedUsers2 = {
+        //   result: {
+        //     users: [
+        //       {
+        //         id: 1,
+        //         firstName: "Alice",
+        //         lastName: "Johnson",
+        //         organization: "OrgA",
+        //         mail: "alice.johnson@example.com",
+        //         userRole: 1, // Assuming roles are represented by numbers, e.g., 1 for "admin"
+        //         accepted: 1  // Assuming "accepted" is represented by 1 (accepted) or 0 (not accepted)
+        //       },
+        //       {
+        //         id: 2,
+        //         firstName: "Bob",
+        //         lastName: "Smith",
+        //         organization: "OrgB",
+        //         mail: "bob.smith@example.com",
+        //         userRole: 2, // e.g., 2 for "user"
+        //         accepted: 0  // Not accepted
+        //       },
+        //       {
+        //         id: 3,
+        //         firstName: "Charlie",
+        //         lastName: "Brown",
+        //         organization: "OrgC",
+        //         mail: "charlie.brown@example.com",
+        //         userRole: 3, // e.g., 3 for "editor"
+        //         accepted: 1
+        //       }
+        //       // Add more users if needed
+        //     ]
+        //   }
+        // };
 
         const userArray = []
         const allUsers = fetchedUsers.result.users
@@ -93,7 +128,7 @@ export default function PersistentDrawerLeft() {
             id: allUsers[i].id,
             firstName: allUsers[i].firstName,
             lastName: allUsers[i].lastName,
-            organizationid: allUsers[i].organization,
+            organizationid: Number(allUsers[i].organization),
             email: allUsers[i].mail,
             role: allUsers[i].userRole,
             accepted: allUsers[i].accepted,
@@ -171,7 +206,7 @@ export default function PersistentDrawerLeft() {
               <ListItem key={rand_user.id} disablePadding>
               <ListItemText
                 primary={`${rand_user.firstName} ${rand_user.lastName}`}
-                secondary={`Role: ${rand_user.role}`}
+                secondary={`Id: ${rand_user.id}`}
               />
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '10px' }}>
                 <Button
