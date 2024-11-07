@@ -4,9 +4,9 @@ import { json } from "stream/consumers";
 import axios from "axios";
 
 const vmPath = "se2-c.compute.dtu.dk:5000";
-const localPath = `localhost:5000`;
+const localPath = `localhost:5001`;
 
-const path = vmPath;
+const path = localPath;
 const BASE_URL = `http://` + path;
 
 export default axios.create({
@@ -843,9 +843,16 @@ export async function fetchUserInfo(accessToken: string) {
   }
 }
 
-export async function fetchUsers() {
+export async function fetchUsers(accessToken: string) {
   try {
-    const response = await fetch(`http://${path}/users/all`);
+    const response = await fetch(`http://${path}/users/all`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+
     if (!response.ok) {
       throw new Error("Fetching users, Network response was not ok");
     }
@@ -874,7 +881,10 @@ export async function fetchUsers() {
     };
 
     // Call getData function with the ticketId obtained from fetchUsers
-    return await getData(jsonData.ticketId);
+    const usersData = await getData(jsonData.ticketId);
+
+    return usersData;
+
   } catch (error) {
     console.error("Fetching users, Error fetching data:", error);
     throw error; // Propagate error to the caller

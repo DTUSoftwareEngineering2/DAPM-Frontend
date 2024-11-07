@@ -81,8 +81,30 @@ export default function PersistentDrawerLeft() {
 
   // Toggle display of users and fetch them if needed
   const handleShowUsers = () => {
-    if (!showUsers) {
-      fetchUsers().then((fetchedUsers) => setUsers(fetchedUsers));
+    if (!showUsers && auth?.accessToken) {
+      fetchUsers(auth.accessToken).then((fetchedUsers) => {
+        // Check if fetchedUsers has a 'data' property that contains the users array
+
+        const userArray = []
+
+        console.log("coucou")
+        console.log(fetchedUsers)
+        console.log("end")
+
+        userArray[0] = {
+            id: fetchedUsers.result.users[0].id,
+            firstName: fetchedUsers.result.users[0].firstName,
+            lastName: fetchedUsers.result.users[0].lastName,
+            organizationid: fetchedUsers.result.users[0].organization,
+            email: fetchedUsers.result.users[0].mail,
+            role: fetchedUsers.result.users[0].userRole,
+            accepted: fetchedUsers.result.users[0].accepted,
+            status: "online" // Add the missing status property
+          };
+
+        setUsers(userArray);
+        
+      });
     }
     setShowUsers(!showUsers);
   };
@@ -130,18 +152,27 @@ export default function PersistentDrawerLeft() {
         {showUsers ? 'Hide Users' : 'Show All Users'}
       </Button>
       {showUsers && (
+        <Box
+        sx={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: '#606060',
+          padding: '20px',
+          borderRadius: '10px',
+          boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+          zIndex: 10,
+        }}
+      >
         <List>
-          {users.map((user) => (
-            <ListItem key={user.id} disablePadding>
-              <ListItemButton onClick={() => setSelectedUser(user)}>
-                <ListItemText
-                  primary={`${user.firstName} ${user.lastName}`}
-                  secondary={`Role: ${user.role}`}
-                />
-              </ListItemButton>
+          {users.map((rand_user) => (
+            <ListItem key={rand_user.id} disablePadding>
+                <ListItemText primary={`${rand_user.firstName} ${rand_user.lastName}`} secondary={`Role: ${rand_user.role}`} />
             </ListItem>
           ))}
         </List>
+        </Box>
       )}
       <List>
         {organizations.map((organization) => (
