@@ -151,26 +151,49 @@ export default function PersistentDrawerLeft() {
       </Button>
       {showUsers && (
         <Box
-        sx={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: '#606060',
-          padding: '20px',
-          borderRadius: '10px',
-          boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-          zIndex: 10,
-        }}
-      >
-        <List>
-          {users.map((rand_user) => (
-            <ListItem key={rand_user.id} disablePadding>
-                <ListItemText primary={`${rand_user.firstName} ${rand_user.lastName}`} secondary={`Role: ${rand_user.role}`} />
-            </ListItem>
-          ))}
-        </List>
-        </Box>
+          sx={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: '#606060',
+        padding: '50px',
+        borderRadius: '10px',
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+        zIndex: 10,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: '10px' }}>
+        Users List
+          </Typography>
+            <List>
+            {users.map((rand_user) => (
+              <ListItem key={rand_user.id} disablePadding>
+              <ListItemText
+                primary={`${rand_user.firstName} ${rand_user.lastName}`}
+                secondary={`Role: ${rand_user.role}`}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '10px' }}>
+                <Button
+                variant="contained"
+                color="success"
+                sx={{ marginRight: '10px' }}
+                onClick={() => console.log('Green mark clicked')}
+                >
+                ✓
+                </Button>
+                <Button
+                variant="contained"
+                color="error"
+                onClick={() => console.log('Red cross clicked')}
+                >
+                ✕
+                </Button>
+              </Box>
+              </ListItem>
+            ))}
+            </List>
+            </Box>
       )}
       <List>
         {organizations.map((organization) => (
