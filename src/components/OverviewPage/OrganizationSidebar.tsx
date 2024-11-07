@@ -86,24 +86,22 @@ export default function PersistentDrawerLeft() {
         // Check if fetchedUsers has a 'data' property that contains the users array
 
         const userArray = []
+        const allUsers = fetchedUsers.result.users
 
-        console.log("coucou")
-        console.log(fetchedUsers)
-        console.log("end")
-
-        userArray[0] = {
-            id: fetchedUsers.result.users[0].id,
-            firstName: fetchedUsers.result.users[0].firstName,
-            lastName: fetchedUsers.result.users[0].lastName,
-            organizationid: fetchedUsers.result.users[0].organization,
-            email: fetchedUsers.result.users[0].mail,
-            role: fetchedUsers.result.users[0].userRole,
-            accepted: fetchedUsers.result.users[0].accepted,
-            status: "online" // Add the missing status property
-          };
+        for (let i = 0; i < allUsers.length; i++) {
+          userArray.push({
+            id: allUsers[i].id,
+            firstName: allUsers[i].firstName,
+            lastName: allUsers[i].lastName,
+            organizationid: allUsers[i].organization,
+            email: allUsers[i].mail,
+            role: allUsers[i].userRole,
+            accepted: allUsers[i].accepted,
+            status: "online"
+          });
+        }
 
         setUsers(userArray);
-        
       });
     }
     setShowUsers(!showUsers);

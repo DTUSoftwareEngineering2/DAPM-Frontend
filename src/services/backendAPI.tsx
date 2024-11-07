@@ -881,9 +881,7 @@ export async function fetchUsers(accessToken: string) {
     };
 
     // Call getData function with the ticketId obtained from fetchUsers
-    const usersData = await getData(jsonData.ticketId);
-
-    return usersData;
+    return await getData(jsonData.ticketId);
 
   } catch (error) {
     console.error("Fetching users, Error fetching data:", error);
