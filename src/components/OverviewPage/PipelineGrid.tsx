@@ -23,6 +23,29 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
+const exampleOutputs = [
+  {
+    name: "raw_event_log.txt",
+    content: "This is the raw event log data...\nTimestamp: 2024-01-01 12:00:00\nEvent: Start Process\n...",
+  },
+  {
+    name: "filtered_cleaned_log.txt",
+    content: "This is the filtered and cleaned log data...\nTimestamp: 2024-01-01 12:05:00\nEvent: Cleaned Entry\n...",
+  },
+  {
+    name: "activity_mappings_output.txt",
+    content: "Activity mappings:\nActivity A -> Step 1\nActivity B -> Step 2\n...",
+  },
+  {
+    name: "dependency_graph_intermediate.txt",
+    content: "Intermediate dependency graph representation:\nNode A -> Node B\nNode B -> Node C\n...",
+  },
+  {
+    name: "final_conformance_summary.txt",
+    content: "Final conformance summary:\nTotal conformance: 95%\nDeviations: 5%\n...",
+  }
+];
+
 export default function AutoGrid() {
   const navigate = useNavigate();
 
@@ -114,7 +137,7 @@ export default function AutoGrid() {
               name={name}
               imgData={imgData}
               status={"completed"}
-              output={"placeholder for the pipeline output"}
+              outputs={exampleOutputs}
             ></PipelineCard>
           </Grid>
         ))}
