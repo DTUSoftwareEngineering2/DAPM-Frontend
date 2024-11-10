@@ -488,6 +488,8 @@ export async function putPipeline(
   repId: string,
   pipelineData: any
 ) {
+  console.log("put pipeline");
+  console.log(orgId + " " + repId);
   console.log(pipelineData);
   try {
     const response = await fetch(
@@ -687,6 +689,7 @@ export async function putOperator(
     throw error; // Propagate error to the caller
   }
 }
+
 
 export async function PostNewPeer(domainName: string) {
   try {

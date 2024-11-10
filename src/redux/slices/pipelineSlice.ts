@@ -5,7 +5,8 @@ import { EdgeData, NodeData, NodeState, PipelineData, PipelineState } from "../s
 
 export const initialState: PipelineState = {
   pipelines: [],
-  activePipelineId: ""
+  activePipelineId: "",
+  dataSinks: [],
 }
 
 const takeSnapshot = (state: PipelineState) => {
@@ -186,8 +187,12 @@ const pipelineSlice = createSlice({
 
       activeFlowData.edges = payload;
     },
+    setDataSinks(state, action: PayloadAction<any[]>) {
+      state.dataSinks = action.payload;
+    },
   },
 })
+
 
 export const { 
   //actions for all pipelines
@@ -214,7 +219,8 @@ export const {
   onEdgesChange, 
   onConnect, 
   setNodes, 
-  setEdges 
+  setEdges, 
+  setDataSinks
 } = pipelineSlice.actions
 
 export default pipelineSlice.reducer 
