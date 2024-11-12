@@ -1,24 +1,26 @@
 import { fetchUserInfo } from "../services/backendAPI";
 
 export interface User {
-    id: number;
-    firstName: string;
-    lastName: string;
-    status: string;
-    organizationid: number;
-    email: string;
-    role: number;
-    accepted: number;
-  }
+  id: number;
+  firstName: string;
+  lastName: string;
+  status: string;
+  organizationid: number;
+  email: string;
+  role: number;
+  accepted: number;
+}
 
-export const getUserInfo = async (accessToken: string): Promise<User | null> => {
+export const getUserInfo = async (
+  accessToken: string
+): Promise<User | null> => {
   try {
     var defaultAccessToken = "";
     if (accessToken !== null) {
       defaultAccessToken = accessToken;
     }
-    console.log("USER TOKEN");
-    console.log(accessToken);
+    // console.log("USER TOKEN");
+    // console.log(accessToken);
 
     const data = await fetchUserInfo(defaultAccessToken);
     const updatedUser: User = {
@@ -29,12 +31,11 @@ export const getUserInfo = async (accessToken: string): Promise<User | null> => 
       organizationid: data.organizationId,
       email: data.email,
       role: data.role,
-      accepted: data.accepted
+      accepted: data.accepted,
     };
-    console.log(data);
     return updatedUser;
   } catch (error) {
-    console.error('Error getting user information:', error);
+    console.error("Error getting user information:", error);
     return null;
   }
 };

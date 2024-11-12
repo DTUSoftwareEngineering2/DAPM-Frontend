@@ -1,9 +1,19 @@
 import React, { createContext, useEffect, useState } from "react";
 
 type AuthContextType = {
-  auth: { email?: string; pwd?: string; accessToken?: string };
+  auth: {
+    email?: string;
+    pwd?: string;
+    accessToken?: string;
+    role?: number;
+  };
   setAuth: React.Dispatch<
-    React.SetStateAction<{ email?: string; pwd?: string; accessToken?: string }>
+    React.SetStateAction<{
+      email?: string;
+      pwd?: string;
+      accessToken?: string;
+      role?: number;
+    }>
   >;
   logout: () => void;
 };
@@ -15,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email?: string;
     pwd?: string;
     accessToken?: string;
+    role?: number;
   }>(() => {
     const savedToken = localStorage.getItem("accessToken");
     return savedToken ? { accessToken: savedToken } : {};
@@ -30,7 +41,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (auth.accessToken) {
       localStorage.setItem("accessToken", auth.accessToken);
     }
-    console.log("Auth state updated:", auth);
+    if (auth.role) {
+      localStorage.setItem("role", auth.role.toString());
+    }
+    // console.log("Auth state updated:", auth);
   }, [auth]);
 
   return (

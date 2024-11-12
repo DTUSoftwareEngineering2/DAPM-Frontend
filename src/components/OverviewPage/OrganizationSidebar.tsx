@@ -52,7 +52,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 export default function PersistentDrawerLeft() {
   const { auth, logout } = useContext(AuthContext);
-  console.log(auth);
+  // console.log("OS", auth);
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -111,7 +111,7 @@ export default function PersistentDrawerLeft() {
 
   useEffect(() => {
     if (auth?.accessToken) {
-      getUserInfo(auth.accessToken).then((userInfo) => setUser(userInfo));
+      getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
     }
   }, []);
 
@@ -156,7 +156,7 @@ export default function PersistentDrawerLeft() {
         Organisations
       </Typography>
       <List>
-        {organizations.map((organization) => (
+        {organizations.map(organization => (
           <>
             <ListItem
               sx={{ justifyContent: "center" }}
@@ -172,7 +172,7 @@ export default function PersistentDrawerLeft() {
                 alignItems: "center",
                 paddingInline: "0.5rem",
               }}></div>
-            {repositories.map((repository) =>
+            {repositories.map(repository =>
               repository.organizationId === organization.id ? (
                 <>
                   <ListItem key={repository.id} sx={{ paddingInline: "5px" }}>
@@ -200,14 +200,14 @@ export default function PersistentDrawerLeft() {
                       />
                     </Box>
                   </div>
-                  {resources.map((resource) =>
+                  {resources.map(resource =>
                     resource.repositoryId === repository.id &&
                     resource.type !== "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton
                             sx={{ paddingBlock: 0 }}
-                            onClick={(_) => handleDownload(resource)}>
+                            onClick={_ => handleDownload(resource)}>
                             <ListItemText
                               secondary={resource.name}
                               secondaryTypographyProps={{ fontSize: "0.8rem" }}
@@ -234,7 +234,7 @@ export default function PersistentDrawerLeft() {
                       />
                     </Box>
                   </div>
-                  {resources.map((resource) =>
+                  {resources.map(resource =>
                     resource.repositoryId === repository.id &&
                     resource.type === "operator" ? (
                       <>
@@ -271,13 +271,15 @@ export default function PersistentDrawerLeft() {
           </>
         ))}
       </List>
-      <Button
-        onClick={handleShowUsers}
-        variant="contained"
-        color="primary"
-        sx={{ margin: "10px" }}>
-        {showUsers ? "Hide Users" : "Show All Users"}
-      </Button>
+      {(auth.role === 1 || localStorage.getItem("userRole") === "1") && (
+        <Button
+          onClick={handleShowUsers}
+          variant="contained"
+          color="primary"
+          sx={{ margin: "10px" }}>
+          {showUsers ? "Hide Users" : "Show All Users"}
+        </Button>
+      )}
       {showUsers && (
         <Box
           sx={{
@@ -306,7 +308,7 @@ export default function PersistentDrawerLeft() {
               .sort((a, b) =>
                 a.accepted === b.accepted ? 0 : a.accepted ? 1 : -1
               )
-              .map((rand_user) => (
+              .map(rand_user => (
                 <ListItem key={rand_user.id} disablePadding>
                   <ListItemText
                     primary={`${rand_user.firstName} ${rand_user.lastName}`}

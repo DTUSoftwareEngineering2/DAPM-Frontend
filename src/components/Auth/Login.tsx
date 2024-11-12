@@ -34,8 +34,16 @@ const Login = () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      setAuth({ email, pwd, accessToken: response.data.accessToken });
+      setAuth({
+        email,
+        pwd,
+        accessToken: response.data.accessToken,
+        role: response.data.user.userRole,
+      });
       localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("role", response.data.user.userRole.toString());
+      // console.log("ROLE", response.data.user.userRole);
+      // console.log("ROLE", localStorage.getItem("role"));
       setEmail("");
       setPwd("");
       navigate(from, { replace: true });

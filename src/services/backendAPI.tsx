@@ -760,7 +760,6 @@ export async function downloadResource(
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
           const response = (await fetchFile(ticketId)) as any;
-          console.log(response);
           if (response.ok) {
             await delay(1000);
             return response;
@@ -810,8 +809,8 @@ export async function fetchUserInfo(accessToken: string) {
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
           const data = await fetchStatus(ticketId);
-          console.log("FETCH USER");
-          console.log(data);
+          // console.log("FETCH USER");
+          // console.log(data);
           if (data.status === 1) {
             // Check if status is completed
             return data.result.user; // Return the user data
