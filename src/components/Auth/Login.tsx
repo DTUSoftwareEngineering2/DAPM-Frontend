@@ -46,7 +46,7 @@ const Login = () => {
         } else if (err.response?.status === 400) {
           setErrMsg("Missing Emailname or Password");
         } else if (err.response?.status === 401) {
-          setErrMsg("Unauthorized");
+          setErrMsg("Unauthorized, contact admin");
         } else {
           setErrMsg("Login Failed");
         }
@@ -59,8 +59,7 @@ const Login = () => {
       <p
         ref={errRef}
         className={errMsg ? "errmsg" : "offscreen"}
-        aria-live="assertive"
-      >
+        aria-live="assertive">
         {errMsg}
       </p>
       <h1>Sign In</h1>
@@ -71,18 +70,16 @@ const Login = () => {
           id="email"
           ref={emailRef}
           autoComplete="off"
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           value={email}
-          required
-        ></input>{" "}
+          required></input>{" "}
         <label htmlFor="password">Password:</label>
         <input
           type="password"
           id="password"
-          onChange={(e) => setPwd(e.target.value)}
+          onChange={e => setPwd(e.target.value)}
           value={pwd}
-          required
-        ></input>{" "}
+          required></input>{" "}
         <button disabled={!email || !pwd}>Sign In</button>
       </form>
       <p>
