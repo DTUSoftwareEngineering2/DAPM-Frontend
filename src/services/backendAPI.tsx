@@ -6,7 +6,7 @@ import axios from "axios";
 const vmPath = "se2-c.compute.dtu.dk:5000";
 const localPath = `localhost:5000`;
 
-const path = localPath;
+const path = vmPath;
 const BASE_URL = `http://` + path;
 
 export default axios.create({
@@ -207,8 +207,8 @@ export async function fetchRepositoryResources(orgId: string, repId: string) {
   try {
     const response = await fetch(
       `http://` +
-        path +
-        `/Organizations/${orgId}/repositories/${repId}/resources`
+      path +
+      `/Organizations/${orgId}/repositories/${repId}/resources`
     );
     if (!response.ok) {
       throw new Error("Fetching resources, Network response was not ok");
@@ -254,8 +254,8 @@ export async function fetchResource(
   try {
     const response = await fetch(
       `http://` +
-        path +
-        `/Organizations/${orgId}/repositories/${repId}/resources/${resId}`
+      path +
+      `/Organizations/${orgId}/repositories/${repId}/resources/${resId}`
     );
     if (!response.ok) {
       throw new Error("Fetching resource, Feching Network response was not ok");
@@ -296,8 +296,8 @@ export async function fetchRepositoryPipelines(orgId: string, repId: string) {
   try {
     const response = await fetch(
       `http://` +
-        path +
-        `/Organizations/${orgId}/repositories/${repId}/pipelines`
+      path +
+      `/Organizations/${orgId}/repositories/${repId}/pipelines`
     );
     if (!response.ok) {
       throw new Error("fetching pipelines, Network response was not ok");
@@ -342,8 +342,8 @@ export async function fetchPipeline(
   try {
     const response = await fetch(
       `http://` +
-        path +
-        `/Organizations/${orgId}/repositories/${repId}/pipelines/${pipId}`
+      path +
+      `/Organizations/${orgId}/repositories/${repId}/pipelines/${pipId}`
     );
     if (!response.ok) {
       throw new Error("fetching pipeline, Network response was not ok");
@@ -439,8 +439,8 @@ export async function putResource(
   try {
     const response = await fetch(
       `http://` +
-        path +
-        `/Organizations/${orgId}/repositories/${repId}/resources`,
+      path +
+      `/Organizations/${orgId}/repositories/${repId}/resources`,
       {
         method: "POST",
         body: formData,
@@ -646,8 +646,8 @@ export async function putOperator(
   try {
     const response = await fetch(
       `http://` +
-        path +
-        `/Organizations/${orgId}/repositories/${repId}/resources/operators`,
+      path +
+      `/Organizations/${orgId}/repositories/${repId}/resources/operators`,
       {
         method: "POST",
         body: formData,
@@ -746,8 +746,8 @@ export async function downloadResource(
   try {
     const response = await fetch(
       `http://` +
-        path +
-        `/organizations/${organizationId}/repositories/${repositoryId}/resources/${resourceId}/file`
+      path +
+      `/organizations/${organizationId}/repositories/${repositoryId}/resources/${resourceId}/file`
     );
     if (!response.ok) {
       throw new Error("Fetching orgs, Network response was not ok");
