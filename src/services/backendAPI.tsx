@@ -627,14 +627,14 @@ export async function putCommandStart(
           }
         }
       }
-      throw new Error("Failed to command start");
+      // throw new Error("Failed to command start");
     };
 
     // Call getData function with the ticketId obtained from putExecution
     return await getData(jsonData.ticketId);
   } catch (error) {
     console.error("put command start, Error fetching data:", error);
-    throw error; // Propagate error to the caller
+    // throw error; // Propagate error to the caller
   }
 }
 
