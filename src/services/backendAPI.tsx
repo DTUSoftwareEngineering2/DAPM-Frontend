@@ -60,7 +60,7 @@ export async function fetchOrganisations() {
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -98,7 +98,7 @@ export async function fetchOrganisation(orgId: string) {
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -138,7 +138,7 @@ export async function fetchOrganisationRepositories(orgId: string) {
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -178,7 +178,7 @@ export async function fetchRepository(orgId: string, repId: string) {
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -219,7 +219,7 @@ export async function fetchRepositoryResources(orgId: string, repId: string) {
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -266,7 +266,7 @@ export async function fetchResource(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -308,7 +308,7 @@ export async function fetchRepositoryPipelines(orgId: string, repId: string) {
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -354,7 +354,7 @@ export async function fetchPipeline(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -405,7 +405,7 @@ export async function putRepository(orgId: string, repositoryName: string) {
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -457,7 +457,7 @@ export async function putResource(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -488,6 +488,8 @@ export async function putPipeline(
   repId: string,
   pipelineData: any
 ) {
+  console.log("put pipeline");
+  console.log(orgId + " " + repId);
   console.log(pipelineData);
   try {
     const response = await fetch(
@@ -511,7 +513,7 @@ export async function putPipeline(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -560,7 +562,7 @@ export async function putExecution(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -610,7 +612,7 @@ export async function putCommandStart(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -662,7 +664,7 @@ export async function putOperator(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -687,6 +689,7 @@ export async function putOperator(
     throw error; // Propagate error to the caller
   }
 }
+
 
 export async function PostNewPeer(domainName: string) {
   try {
@@ -755,12 +758,11 @@ export async function downloadResource(
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
           const response = (await fetchFile(ticketId)) as any;
-          console.log(response);
           if (response.ok) {
             await delay(1000);
             return response;
@@ -805,13 +807,13 @@ export async function fetchUserInfo(accessToken: string) {
     const getStatusData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
       const delay = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
           const data = await fetchStatus(ticketId);
-          console.log("FETCH USER");
-          console.log(data);
+          // console.log("FETCH USER");
+          // console.log(data);
           if (data.status === 1) {
             // Check if status is completed
             return data.result.user; // Return the user data
@@ -834,9 +836,104 @@ export async function fetchUserInfo(accessToken: string) {
       lastName: userInfo.lastName,
       organizationId: userInfo.organization,
       email: userInfo.mail,
+      role: userInfo.userRole,
+      accepted: userInfo.accepted,
     };
   } catch (error) {
     console.error("Error fetching user info:", error);
     throw error;
   }
 }
+
+export async function fetchUsers(accessToken: string) {
+  try {
+    const response = await fetch(`http://${path}/users/all`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Fetching users, Network response was not ok");
+    }
+    const jsonData = await response.json();
+
+    // Fetch additional data recursively
+    const getData = async (ticketId: string): Promise<any> => {
+      const maxRetries = 10;
+      const delay = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms));
+
+      for (let retries = 0; retries < maxRetries; retries++) {
+        try {
+          const data = await fetchStatus(ticketId);
+          if (data.status) {
+            return data;
+          }
+          await delay(1000); // Wait for 1 second before retrying
+        } catch (error) {
+          if (retries === maxRetries - 1) {
+            throw new Error("Max retries reached");
+          }
+        }
+      }
+      throw new Error("Failed to fetch data");
+    };
+
+    // Call getData function with the ticketId obtained from fetchUsers
+    return await getData(jsonData.ticketId);
+  } catch (error) {
+    console.error("Fetching users, Error fetching data:", error);
+    throw error; // Propagate error to the caller
+  }
+}
+
+export const validateUser = async (
+  accessToken: string,
+  userId: string,
+  accept: number
+) => {
+  try {
+    const response = await fetch(`http://${path}/Users/validate`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId,
+        accept,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Validating user, Network response was not ok");
+    }
+  } catch (error) {
+    console.error("Validating user, Error fetching data:", error);
+    throw error;
+  }
+};
+
+export const DeleteUser = async (accessToken: string, userId: string) => {
+  try {
+    const response = await fetch(`http://${path}/Users/delete/${userId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Deleting user, Network response was not ok");
+    }
+  } catch (error) {
+    console.error("Deleting user, Error fetching data:", error);
+    throw error;
+  }
+};
