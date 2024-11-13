@@ -9,21 +9,25 @@ import { CardActionArea, Box, Grid } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setActivePipeline } from '../../redux/slices/pipelineSlice';
+
+export interface OutputFile {
+  name: string; // File name, e.g., "raw_event_log.txt"
+  content: string; // File content
+}
 
 export interface PipelineCardProps {
   id: string;
   name: string;
   imgData: string;
   status: 'not started' | 'running' | 'faulty' | 'completed';
-  output: string; // Pipeline output text
+  outputs: OutputFile[]; // Array of output files
 }
 
-export default function MediaCard({ id, name, imgData, status, output }: PipelineCardProps) {
+export default function MediaCard({ id, name, imgData, status, outputs }: PipelineCardProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [open, setOpen] = React.useState(false);  // State to control dialog open/close
@@ -71,24 +75,27 @@ export default function MediaCard({ id, name, imgData, status, output }: Pipelin
     setOpen(false);
   };
 
-  // Function to handle downloading the pipeline output as a .txt file
-  const downloadOutputAsText = () => {
-    const blob = new Blob([output], { type: 'text/plain' }); // Create a Blob from the output text
-    const link = document.createElement('a'); // Create a temporary anchor element
-    link.href = URL.createObjectURL(blob); // Create an object URL for the blob
-    link.download = `${name}_output.txt`; // Set the filename
-    link.click(); // Trigger the download
-    URL.revokeObjectURL(link.href); // Clean up the object URL
+  // Download a single output file
+  const downloadFile = (fileName: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  // Download all files as separate .txt files
+  const downloadAllFiles = () => {
+    outputs.forEach(output => {
+      downloadFile(output.name, output.content);
+    });
   };
 
   return (
     <Card sx={{ maxWidth: 345 }}>
       <CardActionArea onClick={navigateToPipeline}>
-        <CardMedia
-          sx={{ height: 140 }}
-          title={name}
-          image={imgData}
-        />
+        <CardMedia sx={{ height: 140 }} title={name} image={imgData} />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
             {name}
@@ -112,32 +119,44 @@ export default function MediaCard({ id, name, imgData, status, output }: Pipelin
           />
           {(status === 'faulty' || status === 'completed') && (
             <Button size="small" color="primary" onClick={handleDialogOpen}>
-              View Output
+              View Outputs
             </Button>
           )}
         </CardActions>
       </CardActionArea>
 
-      {/* Dialog to display the pipeline's output */}
+      {/* Dialog to display the pipeline's outputs */}
       <Dialog open={open} onClose={handleDialogClose}>
-        {/* <DialogTitle>Pipeline Output</DialogTitle> */}
-        <DialogTitle>Pipeline Output: {name}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {output}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={downloadOutputAsText} color="primary">
-            Download as .txt
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">Pipeline Outputs: {name}</Typography>
+          <Button onClick={downloadAllFiles} color="primary" variant="outlined">
+            Download All
           </Button>
-          <Button onClick={handleDialogClose} color="primary">
+        </DialogTitle>
+        <DialogContent>
+          {outputs.map((output, index) => (
+            <Grid container key={index} alignItems="center" sx={{ mb: 1 }}>
+              <Grid item xs={8}>
+                <Typography>{output.name}</Typography>
+              </Grid>
+              <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button 
+                  onClick={() => downloadFile(output.name, output.content)} 
+                  color="primary"
+                  variant="outlined"
+                >
+                  Download
+                </Button>
+              </Grid>
+            </Grid>
+          ))}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'flex-end' }}>
+          <Button onClick={handleDialogClose} color="primary" variant="text">
             Close
           </Button>
         </DialogActions>
       </Dialog>
     </Card>
   );
-
-  
 }

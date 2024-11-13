@@ -14,6 +14,11 @@ import ReactDOM from "react-dom";
 import { toPng } from "html-to-image";
 import { getNodesBounds, getViewportForBounds } from "reactflow";
 import { v4 as uuidv4 } from "uuid";
+import { getDataSinks, getResources } from "../../redux/selectors/apiSelector";
+import { fetchRepositoryResources } from "../../services/backendAPI";
+import { downloadResource } from "../../services/backendAPI";
+import { useEffect, useState } from "react";
+import { OutputFile } from "./PipelineCard";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -22,6 +27,29 @@ const Item = styled(Paper)(({ theme }) => ({
   textAlign: "center",
   color: theme.palette.text.secondary,
 }));
+
+const exampleOutputs = [
+  {
+    name: "raw_event_log.txt",
+    content: "This is the raw event log data...\nTimestamp: 2024-01-01 12:00:00\nEvent: Start Process\n...",
+  },
+  {
+    name: "filtered_cleaned_log.txt",
+    content: "This is the filtered and cleaned log data...\nTimestamp: 2024-01-01 12:05:00\nEvent: Cleaned Entry\n...",
+  },
+  {
+    name: "activity_mappings_output.txt",
+    content: "Activity mappings:\nActivity A -> Step 1\nActivity B -> Step 2\n...",
+  },
+  {
+    name: "dependency_graph_intermediate.txt",
+    content: "Intermediate dependency graph representation:\nNode A -> Node B\nNode B -> Node C\n...",
+  },
+  {
+    name: "final_conformance_summary.txt",
+    content: "Final conformance summary:\nTotal conformance: 95%\nDeviations: 5%\n...",
+  }
+];
 
 export default function AutoGrid() {
   const navigate = useNavigate();
@@ -92,6 +120,73 @@ export default function AutoGrid() {
     );
   });
 
+  const dataSinks = useSelector(getDataSinks);
+  const resources = useSelector(getResources);
+  
+  function getPipelineOutput() {
+    if (!dataSinks) return [];
+  
+    /*return dataSinks.map((dataSink) => {
+      const orgId = dataSink.data.instantiationData.resource.organizationId;
+      const repoId = dataSink.data.instantiationData.resource.repositoryId;
+      const filename = dataSink.data.instantiationData.resource.name;
+      console.log(resources);
+      const resource = resources.find((resource) => resource.organizationId === orgId && resource.repositoryId === repoId && resource.name === filename);
+      const resourceId = resource ? resource.id : "not found";
+      return [`orgId : ${orgId}, repoId : ${repoId}, fileName : ${filename}, resource_Id : ${resourceId}`];
+    });*/
+
+
+    const outputPromises = dataSinks.map(async (dataSink) => {
+      const orgId = dataSink.data.instantiationData.resource.organizationId;
+      const repoId = dataSink.data.instantiationData.resource.repositoryId;
+      const filename = dataSink.data.instantiationData.resource.name;
+      
+      const resource = resources.find((resource) => 
+        resource.organizationId === orgId && 
+        resource.repositoryId === repoId && 
+        resource.name === filename
+      );
+  
+      if (!resource) {
+        return {
+          name: filename,
+          content: "Resource not found"
+        };
+      }
+
+      try {
+        const downloadResponse = await downloadResource(orgId, repoId, resource.id);
+        const fileContent = await downloadResponse.text();
+        
+        return {
+          name: filename,
+          content: fileContent
+        };
+      } catch (error) {
+        console.error(`Error downloading resource ${filename}:`, error);
+        return {
+          name: filename,
+          content: `Error downloading file`
+        };
+      }
+    });
+  
+    return Promise.all(outputPromises);
+  }
+
+  const [outputs, setOutputs] = useState<OutputFile[]>([]);
+
+  useEffect(() => {
+    const fetchOutputs = async () => {
+      const results = await getPipelineOutput();
+      setOutputs(results);
+    };
+    
+    fetchOutputs();
+  }, [dataSinks, resources]);
+
+
   return (
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }}>
       <Button
@@ -114,7 +209,7 @@ export default function AutoGrid() {
               name={name}
               imgData={imgData}
               status={"completed"}
-              output={"placeholder for the pipeline output"}
+              outputs={outputs}
             ></PipelineCard>
           </Grid>
         ))}

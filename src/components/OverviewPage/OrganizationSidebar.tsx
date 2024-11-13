@@ -6,6 +6,8 @@ import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
+import DeleteIcon from "@mui/icons-material/Delete";
+import IconButton from "@mui/material/IconButton";
 import { useState, useEffect, useContext } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -212,6 +214,13 @@ export default function PersistentDrawerLeft() {
                               secondary={resource.name}
                               secondaryTypographyProps={{ fontSize: "0.8rem" }}
                             />
+                            <IconButton
+                              edge="end"
+                              aria-label="delete"
+                              onClick={() => {}}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
                           </ListItemButton>
                         </ListItem>
                       </>
@@ -244,6 +253,13 @@ export default function PersistentDrawerLeft() {
                               secondary={resource.name}
                               secondaryTypographyProps={{ fontSize: "0.8rem" }}
                             />
+                            <IconButton
+                              edge="end"
+                              aria-label="delete"
+                              onClick={() => {}}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
                           </ListItemButton>
                         </ListItem>
                       </>

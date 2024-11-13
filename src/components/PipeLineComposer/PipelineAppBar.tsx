@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import React, { useState, useEffect, useContext } from "react";
-import { updatePipelineName } from "../../redux/slices/pipelineSlice";
+import { setDataSinks, updatePipelineName } from "../../redux/slices/pipelineSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import { Node } from "reactflow";
 import {
@@ -72,6 +72,7 @@ export default function PipelineAppBar() {
       return {
         sourceHandle: edge.sourceHandle,
         targetHandle: edge.targetHandle,
+        data : edge.data?.filename
       };
     });
 
@@ -120,6 +121,7 @@ export default function PipelineAppBar() {
       })
       .filter((node) => node !== undefined) as any;
 
+    dispatch(setDataSinks(dataSinks));
     console.log(JSON.stringify(dataSinks));
 
     const requestData = {
@@ -185,6 +187,7 @@ export default function PipelineAppBar() {
           return {
             sourceHandle: edge.sourceHandle,
             targetHandle: edge.targetHandle,
+            data : edge.data,
           };
         }),
       },

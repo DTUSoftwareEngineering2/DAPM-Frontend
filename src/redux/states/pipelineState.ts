@@ -3,7 +3,8 @@ import { Organization, Repository, Resource } from './apiState';
 
 export interface PipelineState {
   pipelines: PipelineData[]
-  activePipelineId: string
+  activePipelineId: string,
+  dataSinks: any[]
 }
 
 export interface HistoryData {
