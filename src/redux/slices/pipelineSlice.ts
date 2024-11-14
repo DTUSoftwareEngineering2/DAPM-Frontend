@@ -1,4 +1,5 @@
 import { addEdge as addFlowEdge, applyEdgeChanges, applyNodeChanges, Connection, Edge, EdgeChange, MarkerType, Node, NodeChange } from "reactflow";
+import { v4 as uuidv4 } from 'uuid';
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { EdgeData, NodeData, NodeState, PipelineData, PipelineState } from "../states/pipelineState";
@@ -29,6 +30,25 @@ const pipelineSlice = createSlice({
       var pipeline = state.pipelines.find(pipeline => pipeline.id === payload.id)
       if (!pipeline) return
       pipeline.imgData = payload.imgData
+    },
+    deletePipeline: (state, { payload }: PayloadAction<string>) => {
+      state.pipelines = state.pipelines.filter(pipeline => pipeline.id !== payload);
+      // Reset activePipelineId if the deleted pipeline was active
+      if (state.activePipelineId === payload) {
+        state.activePipelineId = '';
+      }
+    },
+    duplicatePipeline: (state, action: PayloadAction<string>) => {
+      const pipelineToDuplicate = state.pipelines.find(pipeline => pipeline.id === action.payload);
+      if (pipelineToDuplicate) {
+        // Create a duplicate pipeline with the same flowData, but a new name and id
+        const newPipeline = {
+          ...pipelineToDuplicate,
+          id: `pipeline-${uuidv4()}`, // Generate a new ID
+          name: `${pipelineToDuplicate.name} COPY` // Append "COPY" to the name
+        };
+        state.pipelines.push(newPipeline);
+      }
     },
 
     // actions for undo and redo
@@ -194,7 +214,8 @@ export const {
   addNewPipeline, 
   setActivePipeline, 
   setImageData, 
-  
+  deletePipeline,
+  duplicatePipeline,
   // actions for undo and redo
   undo,
   redo,
