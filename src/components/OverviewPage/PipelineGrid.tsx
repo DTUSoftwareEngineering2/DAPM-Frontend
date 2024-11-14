@@ -3,11 +3,12 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import PipelineCard from "./PipelineCard";
-import { Button } from "@mui/material";
+import { Button, IconButton, Menu, MenuItem } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { addNewPipeline, setImageData, deletePipeline, duplicatePipeline } from "../../redux/slices/pipelineSlice";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addNewPipeline, setImageData } from "../../redux/slices/pipelineSlice";
 import { getPipelines } from "../../redux/selectors";
 import FlowDiagram from "./ImageGeneration/FlowDiagram";
 import ReactDOM from "react-dom";
@@ -57,6 +58,25 @@ export default function AutoGrid() {
   const dispatch = useDispatch();
 
   const pipelines = useSelector(getPipelines);
+  const [anchorElMap, setAnchorElMap] = useState<{ [key: string]: HTMLElement | null }>({});
+
+  const handleMenuClick = (id: string, event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElMap((prev) => ({ ...prev, [id]: event.currentTarget }));
+  };
+
+  const handleClose = (id: string) => {
+    setAnchorElMap((prev) => ({ ...prev, [id]: null }));
+  };
+
+  const handleDelete = (pipelineId: string) => {
+    dispatch(deletePipeline(pipelineId));  // Dispatch the delete action
+    setAnchorElMap((prev) => ({ ...prev, [pipelineId]: null }));  // Close the menu
+  }
+
+  const handleDuplicate = (pipelineId: string) => {
+    dispatch(duplicatePipeline(pipelineId)); // Dispatch the duplicate action
+    setAnchorElMap((prev) => ({ ...prev, [pipelineId]: null }));  // Close the menu
+  };
 
   const createNewPipeline = () => {
     dispatch(
@@ -122,10 +142,10 @@ export default function AutoGrid() {
 
   const dataSinks = useSelector(getDataSinks);
   const resources = useSelector(getResources);
-  
+
   function getPipelineOutput() {
     if (!dataSinks) return [];
-  
+
     /*return dataSinks.map((dataSink) => {
       const orgId = dataSink.data.instantiationData.resource.organizationId;
       const repoId = dataSink.data.instantiationData.resource.repositoryId;
@@ -141,13 +161,13 @@ export default function AutoGrid() {
       const orgId = dataSink.data.instantiationData.resource.organizationId;
       const repoId = dataSink.data.instantiationData.resource.repositoryId;
       const filename = dataSink.data.instantiationData.resource.name;
-      
-      const resource = resources.find((resource) => 
-        resource.organizationId === orgId && 
-        resource.repositoryId === repoId && 
+
+      const resource = resources.find((resource) =>
+        resource.organizationId === orgId &&
+        resource.repositoryId === repoId &&
         resource.name === filename
       );
-  
+
       if (!resource) {
         return {
           name: filename,
@@ -158,7 +178,7 @@ export default function AutoGrid() {
       try {
         const downloadResponse = await downloadResource(orgId, repoId, resource.id);
         const fileContent = await downloadResponse.text();
-        
+
         return {
           name: filename,
           content: fileContent
@@ -171,7 +191,7 @@ export default function AutoGrid() {
         };
       }
     });
-  
+
     return Promise.all(outputPromises);
   }
 
@@ -182,7 +202,7 @@ export default function AutoGrid() {
       const results = await getPipelineOutput();
       setOutputs(results);
     };
-    
+
     fetchOutputs();
   }, [dataSinks, resources]);
 
@@ -202,18 +222,60 @@ export default function AutoGrid() {
         Create New
       </Button>
       <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: "10px" }}>
-        {pipelines.map(({ id, name, imgData }) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} xl={3}>
-            <PipelineCard
-              id={id}
-              name={name}
-              imgData={imgData}
-              status={"completed"}
-              outputs={outputs}
-            ></PipelineCard>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+        {
+          pipelines.map(({ id, name, imgData }) => {
+            const open = Boolean(anchorElMap[id]);
+
+            return (
+              <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={id}>
+                <Paper elevation={3} sx={{ position: "relative" }}>
+                  <IconButton
+                    aria-label="more options"
+                    onClick={(event) => handleMenuClick(id, event)}
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      zIndex: 1000,
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  {/* <span>Menu Button Here</span> */}
+                  <Menu
+                    anchorEl={anchorElMap[id]}
+                    open={open}
+                    onClose={() => handleClose(id)}
+                    PaperProps={{
+                      style: {
+                        width: '150px',
+                      },
+                    }}
+                  >
+                    {/* <MenuItem onClick={() => handleClose(id)}>Rename</MenuItem> */}
+                    <MenuItem onClick={() => handleDuplicate(id)}>Duplicate</MenuItem>
+                    <MenuItem
+                      onClick={() => handleDelete(id)}
+                      sx={{ color: 'red' }}
+                    >
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                  <PipelineCard
+                    id={id}
+                    name={name}
+                    imgData={imgData}
+                    status={"completed"}
+                    outputs={outputs}
+                  ></PipelineCard>
+
+                </Paper>
+              </Grid>
+            );
+          })
+        }
+
+      </Grid >
+    </Box >
   );
 }
