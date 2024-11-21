@@ -1,4 +1,3 @@
-import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
@@ -15,41 +14,9 @@ import { toPng } from "html-to-image";
 import { getNodesBounds, getViewportForBounds } from "reactflow";
 import { v4 as uuidv4 } from "uuid";
 import { getDataSinks, getResources } from "../../redux/selectors/apiSelector";
-import { fetchRepositoryResources } from "../../services/backendAPI";
 import { downloadResource } from "../../services/backendAPI";
 import { useEffect, useState } from "react";
 import { OutputFile } from "./PipelineCard";
-
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
-  color: theme.palette.text.secondary,
-}));
-
-const exampleOutputs = [
-  {
-    name: "raw_event_log.txt",
-    content: "This is the raw event log data...\nTimestamp: 2024-01-01 12:00:00\nEvent: Start Process\n...",
-  },
-  {
-    name: "filtered_cleaned_log.txt",
-    content: "This is the filtered and cleaned log data...\nTimestamp: 2024-01-01 12:05:00\nEvent: Cleaned Entry\n...",
-  },
-  {
-    name: "activity_mappings_output.txt",
-    content: "Activity mappings:\nActivity A -> Step 1\nActivity B -> Step 2\n...",
-  },
-  {
-    name: "dependency_graph_intermediate.txt",
-    content: "Intermediate dependency graph representation:\nNode A -> Node B\nNode B -> Node C\n...",
-  },
-  {
-    name: "final_conformance_summary.txt",
-    content: "Final conformance summary:\nTotal conformance: 95%\nDeviations: 5%\n...",
-  }
-];
 
 export default function AutoGrid() {
   const navigate = useNavigate();
@@ -125,6 +92,7 @@ export default function AutoGrid() {
   
   function getPipelineOutput() {
     if (!dataSinks) return [];
+<<<<<<< Updated upstream
   
     /*return dataSinks.map((dataSink) => {
       const orgId = dataSink.data.instantiationData.resource.organizationId;
@@ -136,6 +104,8 @@ export default function AutoGrid() {
       return [`orgId : ${orgId}, repoId : ${repoId}, fileName : ${filename}, resource_Id : ${resourceId}`];
     });*/
 
+=======
+>>>>>>> Stashed changes
 
     const outputPromises = dataSinks.map(async (dataSink) => {
       const orgId = dataSink.data.instantiationData.resource.organizationId;
@@ -185,7 +155,6 @@ export default function AutoGrid() {
     
     fetchOutputs();
   }, [dataSinks, resources]);
-
 
   return (
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }}>
