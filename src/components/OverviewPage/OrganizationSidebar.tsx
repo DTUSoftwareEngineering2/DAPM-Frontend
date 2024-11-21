@@ -329,7 +329,7 @@ export default function PersistentDrawerLeft() {
                   key={rand_user.id}
                   disablePadding
                   sx={{
-                    width: "90%",
+                    width: "100%",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
@@ -351,15 +351,44 @@ export default function PersistentDrawerLeft() {
                       marginLeft: "10px",
                     }}>
                     {rand_user.accepted ? (
-                      <Button
-                        variant="contained"
-                        style={{ width: "138px" }}
-                        color="error"
-                        onClick={() =>
-                          handleDeleteUser(rand_user.id.toString())
-                        }>
-                        Delete
-                      </Button>
+                      <>
+                        <Button
+                          variant="contained"
+                          style={{ width: "138px" }}
+                          color="error"
+                          onClick={() =>
+                            handleDeleteUser(rand_user.id.toString())
+                          }>
+                          Delete
+                        </Button>
+                        {rand_user.role === 2 ? (
+                          ""
+                        ) : (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            sx={{ marginLeft: "10px" }}
+                            onClick={() =>
+                              handleAdminResponse(rand_user.id.toString(), 1)
+                            }>
+                            Remove Manager
+                          </Button>
+                        )}
+
+                        {rand_user.role === 1 ? (
+                          ""
+                        ) : (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            sx={{ marginLeft: "10px" }}
+                            onClick={() =>
+                              handleAdminResponse(rand_user.id.toString(), 2)
+                            }>
+                            Add Manager
+                          </Button>
+                        )}
+                      </>
                     ) : (
                       <>
                         <Button
