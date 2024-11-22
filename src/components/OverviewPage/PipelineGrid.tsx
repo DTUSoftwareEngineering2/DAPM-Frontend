@@ -20,6 +20,7 @@ import { fetchRepositoryResources } from "../../services/backendAPI";
 import { downloadResource } from "../../services/backendAPI";
 import { useEffect, useState } from "react";
 import { OutputFile } from "./PipelineCard";
+import { fetchPipelineStatus } from "../../services/backendAPI";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -58,6 +59,7 @@ export default function AutoGrid() {
   const dispatch = useDispatch();
 
   const pipelines = useSelector(getPipelines);
+  const [pipelineStatuses, setPipelineStatuses] = useState<{ [key: string]: string }>({});
   const [anchorElMap, setAnchorElMap] = useState<{ [key: string]: HTMLElement | null }>({});
 
   const handleMenuClick = (id: string, event: React.MouseEvent<HTMLElement>) => {
@@ -195,6 +197,30 @@ export default function AutoGrid() {
     return Promise.all(outputPromises);
   }
 
+  const fetchPipelineStatuses = async () => {
+    const statusPromises = pipelines.map(async ({id, name, pipeline, imgData, history, orgId, repoId, excecId}) => {
+      try {
+        const validOrgId = orgId ?? "defaultOrgId";
+        const validRepoId = repoId ?? "defaultRepoId";
+        const validExecId = excecId ?? "defaultExecId";
+
+        const statusResponse = await fetchPipelineStatus(validOrgId, validRepoId, id, validExecId); // Fetch pipeline status
+        const statusText = await statusResponse;
+        return { id, status: statusText };
+      } catch (error) {
+        console.error(`Error fetching status for pipeline ${id}:`, error);
+        return { id, status: "Error fetching status" };
+      }
+    });
+
+    const statuses = await Promise.all(statusPromises);
+    const statusesMap = statuses.reduce(
+      (acc, { id, status }) => ({ ...acc, [id]: status }),
+      {}
+    );
+    setPipelineStatuses(statusesMap);
+  }
+
   const [outputs, setOutputs] = useState<OutputFile[]>([]);
 
   useEffect(() => {
@@ -206,6 +232,9 @@ export default function AutoGrid() {
     fetchOutputs();
   }, [dataSinks, resources]);
 
+  useEffect(() => {
+    fetchPipelineStatuses(); // Fetch statuses when pipelines change
+  }, [pipelines]);
 
   return (
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }}>
@@ -265,7 +294,7 @@ export default function AutoGrid() {
                     id={id}
                     name={name}
                     imgData={imgData}
-                    status={"completed"}
+                    status={pipelineStatuses[id] || "Fetching..."}
                     outputs={outputs}
                   ></PipelineCard>
 

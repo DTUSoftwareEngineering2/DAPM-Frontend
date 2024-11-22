@@ -22,6 +22,7 @@ import {
   getOrganizations,
   getRepositories,
 } from "../../redux/selectors/apiSelector";
+import { getPipelines } from "../../redux/selectors";
 import { getHandleId, getNodeId } from "./Flow";
 import AuthContext from "../../context/AuthProvider";
 import { User, getUserInfo } from "../../redux/userStatus"
@@ -56,6 +57,7 @@ export default function PipelineAppBar() {
 
   const organizations = useSelector(getOrganizations);
   const repositories = useSelector(getRepositories);
+  const pipelines = useSelector(getPipelines);
 
   const pipelineName = useSelector(getActivePipeline)?.name;
 
@@ -216,6 +218,14 @@ export default function PipelineAppBar() {
       pipelineId,
       executionId
     );
+
+    pipelines.forEach((pipeline) => {
+      if (pipeline.id === pipelineId) {
+          pipeline.orgId = selectedOrg.id;
+          pipeline.repoId = selectedRepo.id;
+          pipeline.excecId = executionId;
+      }
+    }); 
   };
 
   const [user, setUser] = useState<User | null>(null);

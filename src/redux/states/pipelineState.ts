@@ -23,6 +23,9 @@ export interface PipelineData {
     pipeline: NodeState;
     imgData: string;
     history: HistoryData;
+    orgId?: string;
+    repoId?: string;
+    excecId?: string;
 }
 
 export interface NodeState {
