@@ -37,7 +37,6 @@ import OperatorUploadButton from "./Buttons/OperatorUploadButton";
 import AuthContext from "../../context/AuthProvider";
 import { User, getUserInfo } from "../../redux/userStatus";
 import { validateUser } from "../../services/backendAPI";
-import { Calculate } from "@mui/icons-material";
 
 export default function PersistentDrawerLeft() {
   const { auth, logout } = useContext(AuthContext);
@@ -106,7 +105,7 @@ export default function PersistentDrawerLeft() {
 
   const handleAdminResponse = async (userId: string, accept: number) => {
     if (auth.accessToken) {
-      await validateUser(auth.accessToken, userId, accept);
+      await validateUser(userId, accept);
       await fetchAndSetUsers();
     }
   };

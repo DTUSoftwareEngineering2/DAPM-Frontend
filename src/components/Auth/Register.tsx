@@ -1,7 +1,6 @@
-import { useRef, useState, useEffect, useContext } from "react";
+import { useRef, useState, useEffect } from "react";
 import { AxiosError } from "axios";
 import axios from "../../services/backendAPI";
-import useAuth from "../../hooks/useAuth";
 import {
   faCheck,
   faTimes,
@@ -11,13 +10,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppSelector } from "../../hooks/hooks";
 import { getOrganizations } from "../../redux/selectors/apiSelector";
 import { Organization } from "../../redux/states/apiState";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const { setAuth } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
   const organizations: Organization[] = useAppSelector(getOrganizations);
 
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -28,19 +24,15 @@ const Register = () => {
   const [email, setUser] = useState("");
   const [validEmail, setValidEmail] = useState(false);
   const [emailFocus, setEmailFocus] = useState(false);
-
   const [pwd, setPwd] = useState("");
   const [validPwd, setValidPwd] = useState(false);
   const [pwdFocus, setPwdFocus] = useState(false);
-
   const [matchPwd, setMatchPwd] = useState("");
   const [validMatch, setValidMatch] = useState(false);
   const [matchFocus, setMatchFocus] = useState(false);
-
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [organization, setOrganization] = useState("");
-
   const [errMsg, setErrMsg] = useState("");
 
   useEffect(() => {
@@ -69,7 +61,7 @@ const Register = () => {
       return;
     }
     try {
-      const response = await axios.post(
+      await axios.post(
         "Auth/signup",
         JSON.stringify({
           email,
@@ -77,13 +69,8 @@ const Register = () => {
           firstName,
           organization,
           password: pwd,
-        }),
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        })
       );
-      // setAuth({ email, pwd, accessToken: response.data.accessToken });
-      // localStorage.setItem("accessToken", response.data.accessToken);
       navigate("/login", { replace: true });
     } catch (err) {
       if (err instanceof AxiosError) {
