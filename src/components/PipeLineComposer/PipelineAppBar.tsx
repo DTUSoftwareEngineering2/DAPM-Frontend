@@ -90,6 +90,7 @@ export default function PipelineAppBar() {
 
   const [open, setOpen] = React.useState(false);  // State to control dialog open/close
   const [outputs, setOutputs] = useState([]);  
+  const [executionHistoryOpen, setExecutionHistoryOpen] = useState(false);
 
   const toggleTable = () => {
     setIsTableOpen((prev) => !prev);
@@ -364,7 +365,7 @@ export default function PipelineAppBar() {
             </Box>
           ) : null}
         </Box>
-        <Button onClick={() => console.log(history)} color="primary" variant="outlined">
+        <Button onClick={() => setExecutionHistoryOpen(true)} color="primary" variant="outlined">
           View History
         </Button>
         <Button onClick={() => generateJson()}>
@@ -373,6 +374,43 @@ export default function PipelineAppBar() {
           </Typography>
         </Button>
       </Toolbar >
+
+      {/* Execution History Dialog */}
+      <Dialog 
+        open={executionHistoryOpen} 
+        onClose={() => setExecutionHistoryOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle>Execution History</DialogTitle>
+        <DialogContent>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date/Time</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Output Files</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {mockExecutionHistory.map((entry, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{entry.time}</TableCell>
+                    <TableCell>{entry.status}</TableCell>
+                    <TableCell>{entry.files}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setExecutionHistoryOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Pipeline Outputs Dialog */}
       <Dialog open={open} onClose={handleDialogClose}>
