@@ -29,6 +29,12 @@ import { User, getUserInfo } from "../../redux/userStatus"
 // Table columns data
 const tableColumns = ["Not running", "Running", "Completed"];
 
+const mockExecutionHistory = [
+  { time: "2024-11-20 14:00:00", status: "Completed", files: "output1.txt, output2.txt" },
+  { time: "2024-11-19 10:30:00", status: "Running", files: "output_temp.txt" },
+  { time: "2024-11-18 09:15:00", status: "Failed", files: "none" },
+];
+
 export interface OutputFile {
   name: string; // File name, e.g., "raw_event_log.txt"
   content: string; // File content
@@ -120,6 +126,9 @@ export default function PipelineAppBar() {
   };
 
   const flowData = useSelector(getActiveFlowData);
+
+  const [history, setHistory] = useState<{ timestamp: string; data: any }[]>([]);
+
 
   const generateJson = async () => {
     //console.log(flowData)
@@ -249,6 +258,12 @@ export default function PipelineAppBar() {
       },
     };
 
+    // Set history to stock the new call
+    setHistory((prevHistory) => [
+      ...prevHistory,
+      { timestamp: new Date().toISOString(), data: requestData },
+    ]);
+
     console.log(JSON.stringify(requestData));
 
     const selectedOrg = organizations[0];
@@ -349,6 +364,9 @@ export default function PipelineAppBar() {
             </Box>
           ) : null}
         </Box>
+        <Button onClick={() => console.log(history)} color="primary" variant="outlined">
+          View History
+        </Button>
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>
             Deploy pipeline

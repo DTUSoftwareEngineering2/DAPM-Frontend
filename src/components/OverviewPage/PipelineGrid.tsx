@@ -1,5 +1,4 @@
 import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import PipelineCard from "./PipelineCard";
 import { Button } from "@mui/material";
@@ -92,20 +91,6 @@ export default function AutoGrid() {
   
   function getPipelineOutput() {
     if (!dataSinks) return [];
-<<<<<<< Updated upstream
-  
-    /*return dataSinks.map((dataSink) => {
-      const orgId = dataSink.data.instantiationData.resource.organizationId;
-      const repoId = dataSink.data.instantiationData.resource.repositoryId;
-      const filename = dataSink.data.instantiationData.resource.name;
-      console.log(resources);
-      const resource = resources.find((resource) => resource.organizationId === orgId && resource.repositoryId === repoId && resource.name === filename);
-      const resourceId = resource ? resource.id : "not found";
-      return [`orgId : ${orgId}, repoId : ${repoId}, fileName : ${filename}, resource_Id : ${resourceId}`];
-    });*/
-
-=======
->>>>>>> Stashed changes
 
     const outputPromises = dataSinks.map(async (dataSink) => {
       const orgId = dataSink.data.instantiationData.resource.organizationId;
