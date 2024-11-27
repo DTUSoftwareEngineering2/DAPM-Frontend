@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper } from "@mui/material";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Switch, Snackbar, Tooltip } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { useNavigate } from "react-router-dom";
@@ -38,6 +38,30 @@ export default function PipelineAppBar() {
 
   const [isTableOpen, setIsTableOpen] = useState(false);
 
+  const [isPrivate, setIsPrivate] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [saveSnackbarOpen, setSaveSnackbarOpen] = useState(false);
+
+  /* // Fetch pipeline visibility from the backend
+  useEffect(() => {
+    const fetchPipelineState = async () => {
+      try {
+        const response = await fetch('/api/pipeline/state', {
+          headers: {
+            'Authorization': `Bearer ${auth.token}`
+          }
+        });
+        const data = await response.json();
+        setIsPrivate(data.isPrivate);
+      } catch (error) {
+        console.error('Error fetching pipeline state:', error);
+      }
+    };
+  
+    fetchPipelineState();
+  }, [auth.token]);
+  */
+
   const toggleTable = () => {
     setIsTableOpen((prev) => !prev);
   };
@@ -52,6 +76,20 @@ export default function PipelineAppBar() {
 
   const handleFinishEditing = () => {
     setIsEditing(false);
+  };
+
+  const handleToggleChange = () => {
+    setIsPrivate((prev) => !prev);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleSavePipeline = () => {
+    // TODO: Add logic to save the public pipeline (upload it to the backend) here.
+    setSaveSnackbarOpen(true);
   };
 
   const organizations = useSelector(getOrganizations);
@@ -295,7 +333,30 @@ export default function PipelineAppBar() {
             Deploy pipeline
           </Typography>
         </Button>
+        <Box display="flex" alignItems="center">
+          <Typography variant="body1" sx={{ marginRight: 1 }}>
+            {isPrivate ? "Private" : "Public"}
+          </Typography>
+          <Switch checked={!isPrivate} onChange={handleToggleChange} />
+          {!isPrivate && (
+            <Tooltip title="Save your changes and upload them to make them visible to others who have access to this pipeline." arrow>
+              <Button color="inherit" onClick={handleSavePipeline}>Save Pipeline</Button>
+            </Tooltip>
+          )}
+        </Box>
       </Toolbar >
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message={`Pipeline visibility updated to ${isPrivate ? "Private" : "Public"}.`}
+      />
+      <Snackbar
+        open={saveSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSaveSnackbarOpen(false)}
+        message="Changes saved."
+      />
 
       {/* Status Table Modal */}
       <Modal
