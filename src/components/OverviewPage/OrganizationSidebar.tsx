@@ -349,7 +349,8 @@ export default function PersistentDrawerLeft() {
                       justifyContent: "flex-end",
                       marginLeft: "10px",
                     }}>
-                    {rand_user.accepted ? (
+                    {rand_user.accepted &&
+                    localStorage.getItem("role") === "1" ? (
                       <>
                         <Button
                           variant="contained"
@@ -417,7 +418,10 @@ export default function PersistentDrawerLeft() {
         </Box>
       )}
 
-      {(auth.role === 1 || localStorage.getItem("userRole") === "1") && (
+      {(auth.role === 1 ||
+        localStorage.getItem("role") === "1" ||
+        auth.role === 2 ||
+        localStorage.getItem("role") === "2") && (
         <Button
           onClick={handleShowUsers}
           variant="contained"

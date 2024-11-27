@@ -60,7 +60,7 @@ export async function fetchFile(ticket: string) {
 
 export async function fetchOrganisations() {
   try {
-    const response = await axiosPrivate.get(`http://${path}/organizations`);
+    const response = await axios.get(`http://${path}/organizations`);
     const jsonData = response.data;
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
