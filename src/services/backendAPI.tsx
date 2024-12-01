@@ -803,11 +803,16 @@ export async function fetchUsers(accessToken: string) {
   }
 }
 
-export const validateUser = async (userId: string, accept: number) => {
+export const validateUser = async (
+  userId: string,
+  accept: number,
+  role: number
+) => {
   try {
     const response = await axiosPrivate.post("/Users/validate", {
       userId,
       accept,
+      role,
     });
 
     return response.data;

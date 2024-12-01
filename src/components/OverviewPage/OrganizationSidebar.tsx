@@ -40,7 +40,6 @@ import { validateUser } from "../../services/backendAPI";
 
 export default function PersistentDrawerLeft() {
   const { auth, logout } = useContext(AuthContext);
-  // console.log("OS", auth);
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -103,9 +102,13 @@ export default function PersistentDrawerLeft() {
     }
   }, []);
 
-  const handleAdminResponse = async (userId: string, accept: number) => {
+  const handleAdminResponse = async (
+    userId: string,
+    accept: number,
+    role: number
+  ) => {
     if (auth.accessToken) {
-      await validateUser(userId, accept);
+      await validateUser(userId, accept, role);
       await fetchAndSetUsers();
     }
   };
@@ -349,8 +352,7 @@ export default function PersistentDrawerLeft() {
                       justifyContent: "flex-end",
                       marginLeft: "10px",
                     }}>
-                    {rand_user.accepted &&
-                    localStorage.getItem("role") === "1" ? (
+                    {rand_user.accepted === 1 ? (
                       <>
                         <Button
                           variant="contained"
@@ -361,32 +363,36 @@ export default function PersistentDrawerLeft() {
                           }>
                           Delete
                         </Button>
-                        {rand_user.role === 2 ? (
-                          ""
-                        ) : (
+                        {rand_user.role === 2 &&
+                        (auth.role === 1 ||
+                          localStorage.getItem("role") === "1") ? (
                           <Button
                             variant="contained"
                             color="primary"
                             sx={{ marginLeft: "10px" }}
                             onClick={() =>
-                              handleAdminResponse(rand_user.id.toString(), 1)
+                              handleAdminResponse(rand_user.id.toString(), 1, 3)
                             }>
                             Remove Manager
                           </Button>
+                        ) : (
+                          ""
                         )}
 
-                        {rand_user.role === 1 ? (
-                          ""
-                        ) : (
+                        {(rand_user.role === 0 || rand_user.role === 3) &&
+                        (auth.role === 1 ||
+                          localStorage.getItem("role") === "1") ? (
                           <Button
                             variant="contained"
                             color="primary"
                             sx={{ marginLeft: "10px" }}
                             onClick={() =>
-                              handleAdminResponse(rand_user.id.toString(), 2)
+                              handleAdminResponse(rand_user.id.toString(), 1, 2)
                             }>
                             Add Manager
                           </Button>
+                        ) : (
+                          ""
                         )}
                       </>
                     ) : (
@@ -396,7 +402,7 @@ export default function PersistentDrawerLeft() {
                           color="success"
                           sx={{ marginRight: "10px" }}
                           onClick={() =>
-                            handleAdminResponse(rand_user.id.toString(), 1)
+                            handleAdminResponse(rand_user.id.toString(), 1, 3)
                           }>
                           ✓
                         </Button>
@@ -404,7 +410,7 @@ export default function PersistentDrawerLeft() {
                           variant="contained"
                           color="error"
                           onClick={() => {
-                            handleAdminResponse(rand_user.id.toString(), 0);
+                            handleAdminResponse(rand_user.id.toString(), 0, 3);
                             handleDeleteUser(rand_user.id.toString());
                           }}>
                           ✕
@@ -469,7 +475,7 @@ export default function PersistentDrawerLeft() {
                 user
                   ? {
                       width: "87px",
-                      height: "33.5px",
+                      height: "34px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
