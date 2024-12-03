@@ -252,8 +252,11 @@ export default function AutoGrid() {
       </Button>
       <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: "10px" }}>
         {
-          pipelines.map(({ id, name, imgData }) => {
+          pipelines.map(({ id, name, imgData, orgId, repoId, excecId }) => {
             const open = Boolean(anchorElMap[id]);
+            // console.log("org: " + orgId);
+            // console.log("rep: " + repoId);
+            // console.log("exec: " + excecId);
 
             return (
               <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={id}>
@@ -295,6 +298,7 @@ export default function AutoGrid() {
                     name={name}
                     imgData={imgData}
                     status={pipelineStatuses[id] || "Fetching..."}
+                    //status={"completed"}
                     outputs={outputs}
                   ></PipelineCard>
 

@@ -4,9 +4,9 @@ import { json } from "stream/consumers";
 import axios from "axios";
 
 const vmPath = "se2-c.compute.dtu.dk:5000";
-const localPath = `localhost:5000`;
+const localPath = `localhost:5003`;
 
-const path = vmPath;
+const path = localPath;
 const BASE_URL = `http://` + path;
 
 export default axios.create({
@@ -26,15 +26,19 @@ export async function fetchPipelineStatus(
   execId: string
 ) {
   try {
-      const url = `http://` + path + `/organizations/organizationId=${orgId}/repositories/repositoryId=${repoId}/pipelines/pipelineId=${pipId}/executions/executionId=${execId}/status`;
+      const newpipId = pipId.slice(9)
+      const url = `http://` + path + `/Organizations/${orgId}/repositories/${repoId}/pipelines/${newpipId}/executions/${execId}/status`;
+      console.log("I AM HEEEEEEERE")
 
       const response = await fetch(url);
-
+      console.log(response)
       if (!response.ok) {
           throw new Error('Network response was not ok');
       }
+      
 
       const status = await response.text(); // Since 'accept: text/plain', we use response.text()
+      console.log(status)
       return status;
   } catch (error) {
       console.error('Error fetching pipeline output:', error);
