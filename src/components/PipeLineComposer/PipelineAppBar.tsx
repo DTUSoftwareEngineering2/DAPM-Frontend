@@ -5,13 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import React, { useState, useEffect, useContext } from "react";
-import { setDataSinks, updatePipelineName } from "../../redux/slices/pipelineSlice";
+import { setDataSinks, updatePipelineName,updateInfo } from "../../redux/slices/pipelineSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import { Node } from "reactflow";
 import {
   DataSinkNodeData,
   DataSourceNodeData,
   OperatorNodeData,
+  PipelineData,
 } from "../../redux/states/pipelineState";
 import {
   putCommandStart,
@@ -21,7 +22,9 @@ import {
 import {
   getOrganizations,
   getRepositories,
+  getPipelineState
 } from "../../redux/selectors/apiSelector";
+import { getPipelines } from "../../redux/selectors";
 import { getHandleId, getNodeId } from "./Flow";
 import AuthContext from "../../context/AuthProvider";
 import { User, getUserInfo } from "../../redux/userStatus"
@@ -54,8 +57,10 @@ export default function PipelineAppBar() {
     setIsEditing(false);
   };
 
+  const state = useSelector(getPipelineState)
   const organizations = useSelector(getOrganizations);
   const repositories = useSelector(getRepositories);
+  const pipelines = useSelector(getPipelines);
 
   const pipelineName = useSelector(getActivePipeline)?.name;
 
@@ -195,10 +200,12 @@ export default function PipelineAppBar() {
 
     console.log(JSON.stringify(requestData));
 
+    const activePipelineId = state.activePipelineId;
     const selectedOrg = organizations[0];
     const selectedRepo = repositories.filter(
       (repo) => repo.organizationId === selectedOrg.id
     )[0];
+
 
     const pipelineId = await putPipeline(
       selectedOrg.id,
@@ -216,6 +223,53 @@ export default function PipelineAppBar() {
       pipelineId,
       executionId
     );
+
+    // pipelines.forEach((pipeline) => {
+    //   console.log(pipelineId)
+    //   if (pipeline.id === activePipelineId) {
+    //     pipeline.orgId = selectedOrg.id;
+    //     pipeline.repoId = selectedRepo.id;
+    //     pipeline.excecId = executionId;
+    //     // let pip = {
+    //     //   id: pipeline.id,
+    //     //   name: pipeline.name,
+    //     //   pipeline: pipeline.pipeline,
+    //     //   imgData: pipeline.imgData,
+    //     //   history: pipeline.history,
+    //     //   orgId: selectedOrg.id,
+    //     //   repoId: selectedRepo.id,
+    //     //   excecId: executionId,
+    //     // }
+      
+    //     // pipeline = pip
+    //   }
+    // }); 
+
+    // pipelines.map((pipeline) => {
+    //   if (pipeline.id === activePipelineId) {
+    //     console.log(`Updating pipeline with ID: ${pipeline.id}`);
+    //     const updatedPipeline = {
+    //       ...pipeline,
+    //       orgId: selectedOrg.id,
+    //       repoId: selectedRepo.id,
+    //       excecId: executionId,
+    //     };
+    //     console.log("Updated pipeline:", updatedPipeline);
+    //     return updatedPipeline;
+    //   }
+    //   return pipeline;
+    // });
+
+    pipelines.forEach((pipeline) => {
+      if (pipeline.id === activePipelineId) {
+        dispatch(updateInfo({
+          pipId: pipeline.id,
+          orgId: selectedOrg.id,
+          repoId: selectedRepo.id,
+          execId: executionId,
+        }));
+      }
+    });
   };
 
   const [user, setUser] = useState<User | null>(null);

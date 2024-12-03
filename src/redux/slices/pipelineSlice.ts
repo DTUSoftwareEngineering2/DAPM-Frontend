@@ -134,6 +134,16 @@ const pipelineSlice = createSlice({
       // Update the handle's type
       handleToUpdate.type = newType;
     },
+    updateInfo: (state, { payload }: PayloadAction<{ pipId?: string, orgId?: string, repoId?: string, execId?: string }>) => {
+      const activePipeline = state.pipelines.find(pipeline => pipeline.id === payload.pipId);
+      if (activePipeline) {
+        if (payload.orgId) activePipeline.orgId = payload.orgId;
+        if (payload.repoId) activePipeline.repoId = payload.repoId;
+        if (payload.execId) activePipeline.excecId = payload.execId;
+      } else {
+        console.error("Pipeline not found for ID:", payload.pipId);
+      }
+    },
     
     updateNode: (state, { payload }: PayloadAction<Node<NodeData> | undefined>) => {
       if (!payload) return
@@ -230,6 +240,7 @@ export const {
   updateSourceHandle,
   updateTargetHandle,
   updatePipelineName, 
+  updateInfo,
   addHandle, 
   updateNode, 
   addNode, 

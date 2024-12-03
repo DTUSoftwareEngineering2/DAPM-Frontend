@@ -5,6 +5,7 @@ import axios from "axios";
 
 const vmPath = "se2-c.compute.dtu.dk:5000";
 const localPath = `localhost:5000`;
+
 const path = localPath;
 const BASE_URL = `http://` + path;
 
@@ -35,6 +36,62 @@ export default axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
+
+export async function fetchPipelineStatus(
+  orgId: string,
+  repoId: string,
+  pipId: string,
+  execId: string
+) {
+  try {
+    const newpipId = pipId.slice(9)
+    const url = `http://` + path + `/Organizations/${orgId}/repositories/${repoId}/pipelines/${newpipId}/executions/${execId}/status`;
+    console.log("I AM HEEEEEEERE")
+
+    const response = await fetch(url);
+    //console.log(response)
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const statusTicket = await response.text(); // Since 'accept: text/plain', we use response.text()
+    const parsedData = JSON.parse(statusTicket);
+    const ticket = parsedData.ticketId;
+    const getData = async (ticketId: string): Promise<any> => {
+      console.log("I got inside")
+      const maxRetries = 10;
+      const delay = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms));
+
+      for (let retries = 0; retries < maxRetries; retries++) {
+        console.log("im here for the " + retries + "th time")
+        try {
+          const statusResponse = await fetchStatus(ticketId);
+          //console.log("NUMBER " + statusResponse.status)
+          if (statusResponse.status > 0) {
+            // const status = await statusResponse.text();
+            // console.log("good status :)" + status)
+            return statusResponse
+          }
+          //console.log(statusResponse)
+
+          await delay(1000); // Wait for 1 second before retrying
+        } catch (error) {
+          if (retries === maxRetries - 1) {
+            throw new Error("Max retries reached");
+          }
+        }
+      }
+      throw new Error("Failed to fetch pipeline status");
+    };
+
+    const status = await getData(ticket);
+    //console.log("END RESULT " + status.result.status.state)
+    return status.result.status.state
+  } catch (error) {
+    console.error('Error fetching pipeline status', error);
+    throw error;
+  }
+}
 
 export async function fetchStatus(ticket: string) {
   try {
