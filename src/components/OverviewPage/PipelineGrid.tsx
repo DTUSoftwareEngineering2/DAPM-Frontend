@@ -253,6 +253,7 @@ export default function AutoGrid() {
       <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: "10px" }}>
         {
           pipelines.map(({ id, name, imgData, orgId, repoId, excecId }) => {
+            //console.log("SJDHFSHFGSJHFDG" + pipelineStatuses[id])
             const open = Boolean(anchorElMap[id]);
             // console.log("org: " + orgId);
             // console.log("rep: " + repoId);

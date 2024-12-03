@@ -117,7 +117,7 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
               zIndex: 2,
             }}
           />
-          {(status === 'faulty' || status === 'completed') && (
+          {(status.toLowerCase() === 'faulty' || status.toLowerCase() === 'completed') && (
             <Button size="small" color="primary" onClick={handleDialogOpen}>
               View Outputs
             </Button>

@@ -31,17 +31,46 @@ export async function fetchPipelineStatus(
       console.log("I AM HEEEEEEERE")
 
       const response = await fetch(url);
-      console.log(response)
+      //console.log(response)
       if (!response.ok) {
           throw new Error('Network response was not ok');
       }
-      
+      const statusTicket = await response.text(); // Since 'accept: text/plain', we use response.text()
+      const parsedData = JSON.parse(statusTicket);
+      const ticket = parsedData.ticketId;
+      const getData = async (ticketId: string): Promise<any> => {
+        console.log("I got inside")
+        const maxRetries = 10;
+        const delay = (ms: number) =>
+          new Promise(resolve => setTimeout(resolve, ms));
+  
+        for (let retries = 0; retries < maxRetries; retries++) {
+          console.log("im here for the " + retries + "th time")
+          try {
+            const statusResponse = await fetchStatus(ticketId);
+            //console.log("NUMBER " + statusResponse.status)
+            if (statusResponse.status > 0) {
+              // const status = await statusResponse.text();
+              // console.log("good status :)" + status)
+              return statusResponse
+            }
+            //console.log(statusResponse)
 
-      const status = await response.text(); // Since 'accept: text/plain', we use response.text()
-      console.log(status)
-      return status;
+            await delay(1000); // Wait for 1 second before retrying
+          } catch (error) {
+            if (retries === maxRetries - 1) {
+              throw new Error("Max retries reached");
+            }
+          }
+        }
+        throw new Error("Failed to fetch pipeline status");
+      };
+
+  const status = await getData(ticket);
+  //console.log("END RESULT " + status.result.status.state)
+  return status.result.status.state
   } catch (error) {
-      console.error('Error fetching pipeline output:', error);
+      console.error('Error fetching pipeline status', error);
       throw error;
   }
 }
