@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
 import PipelineCard from "./PipelineCard";
 import { Button, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
