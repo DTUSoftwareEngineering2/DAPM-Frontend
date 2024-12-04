@@ -1,17 +1,18 @@
-import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper } from "@mui/material";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Switch, Snackbar, Tooltip } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import React, { useState, useEffect, useContext } from "react";
-import { setDataSinks, updatePipelineName } from "../../redux/slices/pipelineSlice";
+import { setDataSinks, updatePipelineName, updateInfo } from "../../redux/slices/pipelineSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import { Node } from "reactflow";
 import {
   DataSinkNodeData,
   DataSourceNodeData,
   OperatorNodeData,
+  PipelineData,
 } from "../../redux/states/pipelineState";
 import {
   putCommandStart,
@@ -21,7 +22,9 @@ import {
 import {
   getOrganizations,
   getRepositories,
+  getPipelineState
 } from "../../redux/selectors/apiSelector";
+import { getPipelines } from "../../redux/selectors";
 import { getHandleId, getNodeId } from "./Flow";
 import AuthContext from "../../context/AuthProvider";
 import { User, getUserInfo } from "../../redux/userStatus"
@@ -37,6 +40,30 @@ export default function PipelineAppBar() {
   const [isEditing, setIsEditing] = useState(false);
 
   const [isTableOpen, setIsTableOpen] = useState(false);
+
+  const [isPrivate, setIsPrivate] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [saveSnackbarOpen, setSaveSnackbarOpen] = useState(false);
+
+  /* // Fetch pipeline visibility from the backend
+  useEffect(() => {
+    const fetchPipelineState = async () => {
+      try {
+        const response = await fetch('/api/pipeline/state', {
+          headers: {
+            'Authorization': `Bearer ${auth.token}`
+          }
+        });
+        const data = await response.json();
+        setIsPrivate(data.isPrivate);
+      } catch (error) {
+        console.error('Error fetching pipeline state:', error);
+      }
+    };
+  
+    fetchPipelineState();
+  }, [auth.token]);
+  */
 
   const toggleTable = () => {
     setIsTableOpen((prev) => !prev);
@@ -54,8 +81,24 @@ export default function PipelineAppBar() {
     setIsEditing(false);
   };
 
+  const handleToggleChange = () => {
+    setIsPrivate((prev) => !prev);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleSavePipeline = () => {
+    // TODO: Add logic to save the public pipeline (upload it to the backend) here.
+    setSaveSnackbarOpen(true);
+  };
+
+  const state = useSelector(getPipelineState)
   const organizations = useSelector(getOrganizations);
   const repositories = useSelector(getRepositories);
+  const pipelines = useSelector(getPipelines);
 
   const pipelineName = useSelector(getActivePipeline)?.name;
 
@@ -72,7 +115,7 @@ export default function PipelineAppBar() {
       return {
         sourceHandle: edge.sourceHandle,
         targetHandle: edge.targetHandle,
-        data : edge.data?.filename
+        data: edge.data?.filename
       };
     });
 
@@ -187,7 +230,7 @@ export default function PipelineAppBar() {
           return {
             sourceHandle: edge.sourceHandle,
             targetHandle: edge.targetHandle,
-            data : edge.data,
+            data: edge.data,
           };
         }),
       },
@@ -195,10 +238,12 @@ export default function PipelineAppBar() {
 
     console.log(JSON.stringify(requestData));
 
+    const activePipelineId = state.activePipelineId;
     const selectedOrg = organizations[0];
     const selectedRepo = repositories.filter(
       (repo) => repo.organizationId === selectedOrg.id
     )[0];
+
 
     const pipelineId = await putPipeline(
       selectedOrg.id,
@@ -216,6 +261,53 @@ export default function PipelineAppBar() {
       pipelineId,
       executionId
     );
+
+    // pipelines.forEach((pipeline) => {
+    //   console.log(pipelineId)
+    //   if (pipeline.id === activePipelineId) {
+    //     pipeline.orgId = selectedOrg.id;
+    //     pipeline.repoId = selectedRepo.id;
+    //     pipeline.excecId = executionId;
+    //     // let pip = {
+    //     //   id: pipeline.id,
+    //     //   name: pipeline.name,
+    //     //   pipeline: pipeline.pipeline,
+    //     //   imgData: pipeline.imgData,
+    //     //   history: pipeline.history,
+    //     //   orgId: selectedOrg.id,
+    //     //   repoId: selectedRepo.id,
+    //     //   excecId: executionId,
+    //     // }
+
+    //     // pipeline = pip
+    //   }
+    // }); 
+
+    // pipelines.map((pipeline) => {
+    //   if (pipeline.id === activePipelineId) {
+    //     console.log(`Updating pipeline with ID: ${pipeline.id}`);
+    //     const updatedPipeline = {
+    //       ...pipeline,
+    //       orgId: selectedOrg.id,
+    //       repoId: selectedRepo.id,
+    //       excecId: executionId,
+    //     };
+    //     console.log("Updated pipeline:", updatedPipeline);
+    //     return updatedPipeline;
+    //   }
+    //   return pipeline;
+    // });
+
+    pipelines.forEach((pipeline) => {
+      if (pipeline.id === activePipelineId) {
+        dispatch(updateInfo({
+          pipId: pipeline.id,
+          orgId: selectedOrg.id,
+          repoId: selectedRepo.id,
+          execId: executionId,
+        }));
+      }
+    });
   };
 
   const [user, setUser] = useState<User | null>(null);
@@ -295,7 +387,30 @@ export default function PipelineAppBar() {
             Deploy pipeline
           </Typography>
         </Button>
+        <Box display="flex" alignItems="center">
+          <Typography variant="body1" sx={{ marginRight: 1 }}>
+            {isPrivate ? "Private" : "Public"}
+          </Typography>
+          <Switch checked={!isPrivate} onChange={handleToggleChange} />
+          {!isPrivate && (
+            <Tooltip title="Save your changes and upload them to make them visible to others who have access to this pipeline." arrow>
+              <Button color="inherit" onClick={handleSavePipeline}>Save Pipeline</Button>
+            </Tooltip>
+          )}
+        </Box>
       </Toolbar >
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message={`Pipeline visibility updated to ${isPrivate ? "Private" : "Public"}.`}
+      />
+      <Snackbar
+        open={saveSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSaveSnackbarOpen(false)}
+        message="Changes saved."
+      />
 
       {/* Status Table Modal */}
       <Modal

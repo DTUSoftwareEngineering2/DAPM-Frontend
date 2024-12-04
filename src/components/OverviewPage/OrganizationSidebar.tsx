@@ -1,4 +1,3 @@
-import { styled } from "@mui/material/styles";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
@@ -34,27 +33,13 @@ import {
   fetchUsers,
 } from "../../services/backendAPI";
 import CreateRepositoryButton from "./Buttons/CreateRepositoryButton";
-import AddOrganizationButton from "./Buttons/AddOrganizationButton";
 import OperatorUploadButton from "./Buttons/OperatorUploadButton";
-import { Padding } from "@mui/icons-material";
 import AuthContext from "../../context/AuthProvider";
 import { User, getUserInfo } from "../../redux/userStatus";
 import { validateUser } from "../../services/backendAPI";
 
-const drawerWidth = 240;
-
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-  justifyContent: "flex-end",
-}));
-
 export default function PersistentDrawerLeft() {
   const { auth, logout } = useContext(AuthContext);
-  // console.log("OS", auth);
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -117,9 +102,13 @@ export default function PersistentDrawerLeft() {
     }
   }, []);
 
-  const handleAdminResponse = async (userId: string, accept: number) => {
+  const handleAdminResponse = async (
+    userId: string,
+    accept: number,
+    role: number
+  ) => {
     if (auth.accessToken) {
-      await validateUser(auth.accessToken, userId, accept);
+      await validateUser(userId, accept, role);
       await fetchAndSetUsers();
     }
   };
@@ -139,11 +128,11 @@ export default function PersistentDrawerLeft() {
         },
       }}
       sx={{
-        width: drawerWidth,
+        width: "240px",
         position: "static",
         flexGrow: 1,
         "& .MuiDrawer-paper": {
-          width: drawerWidth,
+          width: "240px",
           boxSizing: "border-box",
         },
       }}
@@ -217,8 +206,7 @@ export default function PersistentDrawerLeft() {
                             <IconButton
                               edge="end"
                               aria-label="delete"
-                              onClick={() => {}}
-                            >
+                              onClick={() => {}}>
                               <DeleteIcon />
                             </IconButton>
                           </ListItemButton>
@@ -256,8 +244,7 @@ export default function PersistentDrawerLeft() {
                             <IconButton
                               edge="end"
                               aria-label="delete"
-                              onClick={() => {}}
-                            >
+                              onClick={() => {}}>
                               <DeleteIcon />
                             </IconButton>
                           </ListItemButton>
@@ -287,15 +274,6 @@ export default function PersistentDrawerLeft() {
           </>
         ))}
       </List>
-      {(auth.role === 1 || localStorage.getItem("userRole") === "1") && (
-        <Button
-          onClick={handleShowUsers}
-          variant="contained"
-          color="primary"
-          sx={{ margin: "10px" }}>
-          {showUsers ? "Hide Users" : "Show All Users"}
-        </Button>
-      )}
       {showUsers && (
         <Box
           sx={{
@@ -308,27 +286,65 @@ export default function PersistentDrawerLeft() {
             borderRadius: "10px",
             boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
             zIndex: 10,
-            width: "40%",
-            marginLeft: "100px",
-            maxHeight: "80vh",
+            width: "calc(100% - 240px)",
+            height: "100%",
+            marginLeft: "120px",
             overflowY: "auto",
             scrollbarWidth: "thin",
             scrollbarColor: "#292929 #606060",
           }}>
+          <Button
+            sx={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              padding: "4px",
+              color: "white",
+              fontSize: "24px",
+              backgroundColor: "red",
+              "&:hover": {
+                backgroundColor: "#ff3333",
+                opacity: 0.8,
+              },
+            }}
+            onClick={() => setShowUsers(false)}>
+            X
+          </Button>
           <Typography variant="h6" sx={{ marginBottom: "10px" }}>
             Users List
           </Typography>
-          <List>
-            {/* Sort users to show non-accepted users at the top */}
+          <List
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginX: "20px",
+              padding: "0",
+              gap: "8px",
+            }}>
             {users
               .sort((a, b) =>
                 a.accepted === b.accepted ? 0 : a.accepted ? 1 : -1
               )
               .map(rand_user => (
-                <ListItem key={rand_user.id} disablePadding>
+                <ListItem
+                  key={rand_user.id}
+                  disablePadding
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px",
+                    backgroundColor: "#4A4A4A",
+                    borderRadius: "5px",
+                  }}>
                   <ListItemText
                     primary={`${rand_user.firstName} ${rand_user.lastName}`}
                     secondary={`Id: ${rand_user.id}`}
+                    sx={{
+                      flex: 1,
+                    }}
                   />
                   <Box
                     sx={{
@@ -336,16 +352,49 @@ export default function PersistentDrawerLeft() {
                       justifyContent: "flex-end",
                       marginLeft: "10px",
                     }}>
-                    {rand_user.accepted ? (
-                      <Button
-                        variant="contained"
-                        style={{ width: "138px" }}
-                        color="error"
-                        onClick={() =>
-                          handleDeleteUser(rand_user.id.toString())
-                        }>
-                        Delete
-                      </Button>
+                    {rand_user.accepted === 1 ? (
+                      <>
+                        <Button
+                          variant="contained"
+                          style={{ width: "138px" }}
+                          color="error"
+                          onClick={() =>
+                            handleDeleteUser(rand_user.id.toString())
+                          }>
+                          Delete
+                        </Button>
+                        {rand_user.role === 2 &&
+                        (auth.role === 1 ||
+                          localStorage.getItem("role") === "1") ? (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            sx={{ marginLeft: "10px" }}
+                            onClick={() =>
+                              handleAdminResponse(rand_user.id.toString(), 1, 3)
+                            }>
+                            Remove Manager
+                          </Button>
+                        ) : (
+                          ""
+                        )}
+
+                        {(rand_user.role === 0 || rand_user.role === 3) &&
+                        (auth.role === 1 ||
+                          localStorage.getItem("role") === "1") ? (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            sx={{ marginLeft: "10px" }}
+                            onClick={() =>
+                              handleAdminResponse(rand_user.id.toString(), 1, 2)
+                            }>
+                            Add Manager
+                          </Button>
+                        ) : (
+                          ""
+                        )}
+                      </>
                     ) : (
                       <>
                         <Button
@@ -353,7 +402,7 @@ export default function PersistentDrawerLeft() {
                           color="success"
                           sx={{ marginRight: "10px" }}
                           onClick={() =>
-                            handleAdminResponse(rand_user.id.toString(), 1)
+                            handleAdminResponse(rand_user.id.toString(), 1, 3)
                           }>
                           ✓
                         </Button>
@@ -361,7 +410,7 @@ export default function PersistentDrawerLeft() {
                           variant="contained"
                           color="error"
                           onClick={() => {
-                            handleAdminResponse(rand_user.id.toString(), 0);
+                            handleAdminResponse(rand_user.id.toString(), 0, 3);
                             handleDeleteUser(rand_user.id.toString());
                           }}>
                           ✕
@@ -373,6 +422,24 @@ export default function PersistentDrawerLeft() {
               ))}
           </List>
         </Box>
+      )}
+
+      {(auth.role === 1 ||
+        localStorage.getItem("role") === "1" ||
+        auth.role === 2 ||
+        localStorage.getItem("role") === "2") && (
+        <Button
+          onClick={handleShowUsers}
+          variant="contained"
+          color="primary"
+          sx={{
+            position: "fixed",
+            bottom: 48,
+            width: "240px",
+            height: "40px",
+          }}>
+          {showUsers ? "Hide Users" : "Show All Users"}
+        </Button>
       )}
       <Button
         onClick={logout}
@@ -408,7 +475,7 @@ export default function PersistentDrawerLeft() {
                 user
                   ? {
                       width: "87px",
-                      height: "33.5px",
+                      height: "34px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
