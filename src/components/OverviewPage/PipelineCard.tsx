@@ -38,7 +38,7 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
     // Fetch the pipeline visibility from the backend and update the state
     const fetchPipelineState = async () => {
       try {
-        const response = await fetch('/api/pipeline/state');
+        const response = await fetch('/api/pipeline/state'); // TODO: Replace with actual endpoint
         const data = await response.json();
         setIsPrivate(data.isPrivate);
       } catch (error) {

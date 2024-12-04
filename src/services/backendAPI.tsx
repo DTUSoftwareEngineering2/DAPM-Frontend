@@ -4,9 +4,11 @@ import { json } from "stream/consumers";
 import axios from "axios";
 
 const vmPath = "se2-c.compute.dtu.dk:5000";
-const localPath = `localhost:5000`;
+const localPath = `localhost:5003`;
 
-const path = vmPath;
+// const path = vmPath;
+const path = localPath;
+
 const BASE_URL = `http://` + path;
 
 export default axios.create({
@@ -936,4 +938,27 @@ export const DeleteUser = async (accessToken: string, userId: string) => {
     console.error("Deleting user, Error fetching data:", error);
     throw error;
   }
+};
+
+// Call when private/public toggle is switched to private.
+export const deletePipeline = async (
+  organizationId: string,
+  repositoryId: string,
+  pipelineId: string
+): Promise<void> => {
+  const response = await fetch(
+    `http://${path}/organizations/${organizationId}/repositories/${repositoryId}/${pipelineId}/delete`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: "text/plain",
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete pipeline: ${response.statusText}`);
+  }
+
+  return;
 };

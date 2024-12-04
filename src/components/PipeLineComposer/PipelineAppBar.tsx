@@ -17,6 +17,7 @@ import {
   putCommandStart,
   putExecution,
   putPipeline,
+  deletePipeline,
 } from "../../services/backendAPI";
 import {
   getOrganizations,
@@ -78,9 +79,56 @@ export default function PipelineAppBar() {
     setIsEditing(false);
   };
 
-  const handleToggleChange = () => {
-    setIsPrivate((prev) => !prev);
+  const handleToggleChange = async () => {
+    const newIsPrivate = !isPrivate;
+    setIsPrivate(newIsPrivate);
     setSnackbarOpen(true);
+
+    if (newIsPrivate) { // Switching to private
+      try {
+        const selectedOrg = organizations[0]; // like in generateJson()
+        const selectedRepo = repositories.filter(
+          (repo) => repo.organizationId === selectedOrg.id
+        )[0]; // like in generateJson()
+        const pipelineId = useSelector(getActivePipeline)?.id;
+
+        if (!pipelineId) {
+          console.error('No active pipeline ID found');
+          return;
+        }
+
+        await deletePipeline(
+          selectedOrg.id, 
+          selectedRepo.id, 
+          pipelineId
+        );
+        setSaveSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error deleting pipeline:', error);
+      }
+    } else { // Switching to public
+      try {
+        const selectedOrg = organizations[0]; // like in generateJson()
+        const selectedRepo = repositories.filter(
+          (repo) => repo.organizationId === selectedOrg.id
+        )[0]; // like in generateJson()
+        const response = await fetch(`/organizations/${selectedOrg.id}/repositories/${selectedRepo.id}/pipelines`, { // TODO: I think I have to put this in a function in backendAPI.tsx so that there's 'http://${path}/' in front of the endpoint
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json', // format of the data in the request body
+            'Accept': 'text/plain', // data format expected in the response
+          },
+          body: JSON.stringify(pipelineData) // TODO: (How to get the pipelineData here? +) How to make the data have no pipelineID for initial save? --> Does it automatically have no pipelineID initially?
+        });
+        if (response.ok) {
+          setSaveSnackbarOpen(true);
+        } else {
+          console.error('Error saving pipeline:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error saving pipeline:', error);
+      }
+    } 
   };
 
   const handleSnackbarClose = () => {
@@ -96,6 +144,7 @@ export default function PipelineAppBar() {
   const repositories = useSelector(getRepositories);
 
   const pipelineName = useSelector(getActivePipeline)?.name;
+  const pipelineData = useSelector(getActivePipeline); // TODO: Does this actually get the pipeline data needed in the body of the endpoint for saving the pipeline?
 
   const setPipelineName = (name: string) => {
     dispatch(updatePipelineName(name));
@@ -241,7 +290,7 @@ export default function PipelineAppBar() {
     const pipelineId = await putPipeline(
       selectedOrg.id,
       selectedRepo.id,
-      requestData
+      requestData // TODO: add visibility & user id
     );
     const executionId = await putExecution(
       selectedOrg.id,
