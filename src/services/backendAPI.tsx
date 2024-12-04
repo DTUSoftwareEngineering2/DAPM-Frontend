@@ -6,8 +6,25 @@ import axios from "axios";
 const vmPath = "se2-c.compute.dtu.dk:5000";
 const localPath = `localhost:5000`;
 
-const path = vmPath;
+const path = localPath;
 const BASE_URL = `http://` + path;
+
+export const axiosPrivateNoJson = axios.create({
+  baseURL: BASE_URL,
+});
+
+axiosPrivateNoJson.interceptors.request.use(
+  config => {
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      config.headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
 
 export const axiosPrivate = axios.create({
   baseURL: BASE_URL,
@@ -445,7 +462,7 @@ export async function putResource(
   formData: FormData
 ) {
   try {
-    const response = await axiosPrivate.post(
+    const response = await axiosPrivateNoJson.post(
       `/Organizations/${orgId}/repositories/${repId}/resources`,
       formData // Sending the form data directly
     );
