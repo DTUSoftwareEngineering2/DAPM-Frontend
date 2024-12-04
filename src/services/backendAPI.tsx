@@ -843,3 +843,115 @@ export async function fetchUserInfo(accessToken: string) {
     throw error;
   }
 }
+
+export async function getExecutionDate(
+  orgId: string,
+  repId: string,
+  pipeId: string
+) {
+  try {
+    const response = await fetch(
+      `http://${path}/organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/execution-date`,
+      {
+        method: "GET",
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error("get execution date, Network response was not ok");
+    }
+
+    const jsonData = await response.json();
+
+    // Fetch additional data recursively
+    const getData = async (ticketId: string): Promise<any> => {
+      const maxRetries = 10;
+      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      for (let retries = 0; retries < maxRetries; retries++) {
+        try {
+          const data = await fetchStatus(ticketId);
+
+          if (data.status) {
+            return data.result.executionDate; // Assuming this is where the dates are
+          }
+          await delay(1000); // Wait for 1 second before retrying
+        } catch (error) {
+          if (retries === maxRetries - 1) {
+            throw new Error("Max retries reached");
+          }
+        }
+      }
+      throw new Error("Failed to fetch execution dates");
+    };
+
+    // Call getData function with the ticketId obtained from the initial response
+    return await getData(jsonData.ticketId);
+  } catch (error) {
+    console.error("get execution date, Error fetching data:", error);
+    throw error;
+  }
+}
+
+export async function setExecutionDate(
+  orgId: string,
+  repId: string,
+  pipeId: string,
+  executionDate: string
+) {
+  try {
+
+    const date = new Date(executionDate);
+
+    // Extract year, month, day, hour, minute, and second
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+
+    // Format the output
+    const formattedDate = `${year}-${month}-${day}%20${hours}%3A${minutes}%3A${seconds}`;
+    
+    const response = await fetch(
+      `http://${path}/organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/set-execution-date?executionDate=${formattedDate}`,
+      {
+        method: "POST",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("set execution date, Network response was not ok");
+    }
+
+    const jsonData = await response.json();
+
+    // Fetch additional data recursively
+    const getData = async (ticketId: string): Promise<any> => {
+      const maxRetries = 10;
+      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      for (let retries = 0; retries < maxRetries; retries++) {
+        try {
+          const data = await fetchStatus(ticketId);
+          if (data.status) {
+            return data.result; // Assuming this is where the updated information is
+          }
+          await delay(1000); // Wait for 1 second before retrying
+        } catch (error) {
+          if (retries === maxRetries - 1) {
+            throw new Error("Max retries reached");
+          }
+        }
+      }
+      throw new Error("Failed to set execution date");
+    };
+
+    // Call getData function with the ticketId obtained from the initial response
+    return await getData(jsonData.ticketId);
+  } catch (error) {
+    console.error("set execution date, Error setting data:", error);
+    throw error;
+  }
+}

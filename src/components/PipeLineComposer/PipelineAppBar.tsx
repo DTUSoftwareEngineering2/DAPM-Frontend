@@ -17,6 +17,8 @@ import {
   putCommandStart,
   putExecution,
   putPipeline,
+  setExecutionDate,
+  getExecutionDate
 } from "../../services/backendAPI";
 import {
   getOrganizations,
@@ -28,12 +30,6 @@ import { User, getUserInfo } from "../../redux/userStatus"
 
 // Table columns data
 const tableColumns = ["Not running", "Running", "Completed"];
-
-const mockExecutionHistory = [
-  { time: "2024-11-20 14:00:00", status: "Completed", files: "output1.txt, output2.txt" },
-  { time: "2024-11-19 10:30:00", status: "Running", files: "output_temp.txt" },
-  { time: "2024-11-18 09:15:00", status: "Failed", files: "none" },
-];
 
 export interface OutputFile {
   name: string; // File name, e.g., "raw_event_log.txt"
@@ -128,11 +124,10 @@ export default function PipelineAppBar() {
 
   const flowData = useSelector(getActiveFlowData);
 
-  const [history, setHistory] = useState<{ timestamp: string; data: any }[]>([]);
-
+  const [executionHistory, setExecutionHistory] = useState<{ timestamp: string; }[]>([]);
 
   const generateJson = async () => {
-    //console.log(flowData)
+    const timestamp = new Date().toISOString();
 
     var edges = flowData!.edges.map((edge) => {
       return {
@@ -189,7 +184,7 @@ export default function PipelineAppBar() {
 
     dispatch(setDataSinks(dataSinks));
     console.log(JSON.stringify(dataSinks));
-
+    
     const requestData = {
       name: pipelineName,
       pipeline: {
@@ -259,14 +254,6 @@ export default function PipelineAppBar() {
       },
     };
 
-    // Set history to stock the new call
-    setHistory((prevHistory) => [
-      ...prevHistory,
-      { timestamp: new Date().toISOString(), data: requestData },
-    ]);
-
-    console.log(JSON.stringify(requestData));
-
     const selectedOrg = organizations[0];
     const selectedRepo = repositories.filter(
       (repo) => repo.organizationId === selectedOrg.id
@@ -277,18 +264,49 @@ export default function PipelineAppBar() {
       selectedRepo.id,
       requestData
     );
+    
+    const sendData = await setExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId, 
+      new Date().toISOString()
+    );
+
+    const dateListStrin = await getExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId
+    );
+
+    const dateListString = await getExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId
+    );
+
+    console.log(dateListString)
+    
+    // Parsing the dateListString into an array
+    let dateList = dateListString
+      .replace(/\[|\]/g, '')
+      .split(/\s*,\s*/)
+      .map((date: string) => date.replace(/"/g, '').trim());
+    
+    setExecutionHistory(dateList.map((date: string) => ({ timestamp: date })));
+
     const executionId = await putExecution(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId
     );
-    await putCommandStart(
+    
+    const result = await putCommandStart(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId,
       executionId
     );
-  };
+  }
 
   const [user, setUser] = useState<User | null>(null);
 
@@ -379,31 +397,35 @@ export default function PipelineAppBar() {
       <Dialog 
         open={executionHistoryOpen} 
         onClose={() => setExecutionHistoryOpen(false)} 
-        maxWidth="md" 
+        maxWidth="sm" 
         fullWidth
       >
         <DialogTitle>Execution History</DialogTitle>
         <DialogContent>
-          <TableContainer component={Paper}>
+          <Paper>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Date/Time</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Output Files</TableCell>
+                  <TableCell>Timestamp</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {mockExecutionHistory.map((entry, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{entry.time}</TableCell>
-                    <TableCell>{entry.status}</TableCell>
-                    <TableCell>{entry.files}</TableCell>
+                {executionHistory.length > 0 ? (
+                  executionHistory.map((entry, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{entry.timestamp}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={1} align="center">
+                      No execution history available.
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
-          </TableContainer>
+          </Paper>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setExecutionHistoryOpen(false)} color="primary">
@@ -411,6 +433,7 @@ export default function PipelineAppBar() {
           </Button>
         </DialogActions>
       </Dialog>
+
 
       {/* Pipeline Outputs Dialog */}
       <Dialog open={open} onClose={handleDialogClose}>
