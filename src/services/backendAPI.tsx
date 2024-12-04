@@ -6,7 +6,7 @@ import axios from "axios";
 const vmPath = "se2-c.compute.dtu.dk:5000";
 const localPath = `localhost:5000`;
 
-const path = localPath;
+const path = vmPath;
 const BASE_URL = `http://` + path;
 
 export const axiosPrivateNoJson = axios.create({
