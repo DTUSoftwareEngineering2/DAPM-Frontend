@@ -164,12 +164,15 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
       <Dialog open={open} onClose={handleDialogClose}>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6">Pipeline Outputs: {name}</Typography>
+          {outputs.length > 0 && (
           <Button onClick={downloadAllFiles} color="primary" variant="outlined">
             Download All
           </Button>
+          )}
         </DialogTitle>
         <DialogContent>
-          {outputs.map((output, index) => (
+          {outputs.length > 0 ? (
+            outputs.map((output, index) => (
             <Grid container key={index} alignItems="center" sx={{ mb: 1 }}>
               <Grid item xs={8}>
                 <Typography>{output.name}</Typography>
@@ -184,7 +187,12 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
                 </Button>
               </Grid>
             </Grid>
-          ))}
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No outputs available for this pipeline.
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'flex-end' }}>
           <Button onClick={handleDialogClose} color="primary" variant="text">

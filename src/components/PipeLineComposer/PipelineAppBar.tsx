@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Switch, Snackbar, Tooltip } from "@mui/material";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Switch, Snackbar, Tooltip } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,8 @@ import {
   putCommandStart,
   putExecution,
   putPipeline,
+  setExecutionDate,
+  getExecutionDate
 } from "../../services/backendAPI";
 import {
   getOrganizations,
@@ -32,6 +34,50 @@ import { User, getUserInfo } from "../../redux/userStatus"
 // Table columns data
 const tableColumns = ["Not running", "Running", "Completed"];
 
+export interface OutputFile {
+  name: string; // File name, e.g., "raw_event_log.txt"
+  content: string; // File content
+}
+
+const exampleOutputs: OutputFile[] = [
+  {
+    name: "raw_event_log.txt",
+    content: "This is the raw event log data...\nTimestamp: 2024-01-01 12:00:00\nEvent: Start Process\n...",
+  },
+  {
+    name: "filtered_cleaned_log.txt",
+    content: "This is the filtered and cleaned log data...\nTimestamp: 2024-01-01 12:05:00\nEvent: Cleaned Entry\n...",
+  },
+  {
+    name: "activity_mappings_output.txt",
+    content: "Activity mappings:\nActivity A -> Step 1\nActivity B -> Step 2\n...",
+  },
+  {
+    name: "dependency_graph_intermediate.txt",
+    content: "Intermediate dependency graph representation:\nNode A -> Node B\nNode B -> Node C\n...",
+  },
+  {
+    name: "final_conformance_summary.txt",
+    content: "Final conformance summary:\nTotal conformance: 95%\nDeviations: 5%\n...",
+  },
+];
+
+const downloadFile = (fileName: string, content: string) => {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
+
+const downloadAllFiles = () => {
+  // outputs.forEach(output => {
+  exampleOutputs.forEach(output => {
+    downloadFile(output.name, output.content);  // Downloads each file individually
+  });
+};
+
 export default function PipelineAppBar() {
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -41,29 +87,12 @@ export default function PipelineAppBar() {
 
   const [isTableOpen, setIsTableOpen] = useState(false);
 
+  const [open, setOpen] = React.useState(false);  // State to control dialog open/close
+  const [outputs, setOutputs] = useState([]);
+  const [executionHistoryOpen, setExecutionHistoryOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [saveSnackbarOpen, setSaveSnackbarOpen] = useState(false);
-
-  /* // Fetch pipeline visibility from the backend
-  useEffect(() => {
-    const fetchPipelineState = async () => {
-      try {
-        const response = await fetch('/api/pipeline/state', {
-          headers: {
-            'Authorization': `Bearer ${auth.token}`
-          }
-        });
-        const data = await response.json();
-        setIsPrivate(data.isPrivate);
-      } catch (error) {
-        console.error('Error fetching pipeline state:', error);
-      }
-    };
-  
-    fetchPipelineState();
-  }, [auth.token]);
-  */
 
   const toggleTable = () => {
     setIsTableOpen((prev) => !prev);
@@ -79,6 +108,15 @@ export default function PipelineAppBar() {
 
   const handleFinishEditing = () => {
     setIsEditing(false);
+  };
+
+  const handleDialogOpen = (event: React.MouseEvent) => {
+    event.stopPropagation();  // Prevent triggering the navigation when clicking the smaller button
+    setOpen(true);  // Set the dialog state to true (open)
+  };
+
+  const handleDialogClose = () => {
+    setOpen(false);  // Set the dialog state to false (close)
   };
 
   const handleToggleChange = () => {
@@ -108,8 +146,10 @@ export default function PipelineAppBar() {
 
   const flowData = useSelector(getActiveFlowData);
 
+  const [executionHistory, setExecutionHistory] = useState<{ timestamp: string; }[]>([]);
+
   const generateJson = async () => {
-    //console.log(flowData)
+    const timestamp = new Date().toISOString();
 
     var edges = flowData!.edges.map((edge) => {
       return {
@@ -250,12 +290,43 @@ export default function PipelineAppBar() {
       selectedRepo.id,
       requestData
     );
+
+    const sendData = await setExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId,
+      new Date().toISOString()
+    );
+
+    const dateListStrin = await getExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId
+    );
+
+    const dateListString = await getExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId
+    );
+
+    console.log(dateListString)
+
+    // Parsing the dateListString into an array
+    let dateList = dateListString
+      .replace(/\[|\]/g, '')
+      .split(/\s*,\s*/)
+      .map((date: string) => date.replace(/"/g, '').trim());
+
+    setExecutionHistory(dateList.map((date: string) => ({ timestamp: date })));
+
     const executionId = await putExecution(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId
     );
-    await putCommandStart(
+
+    const result = await putCommandStart(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId,
@@ -281,7 +352,7 @@ export default function PipelineAppBar() {
 
     //     // pipeline = pip
     //   }
-    // }); 
+    // });
 
     // pipelines.map((pipeline) => {
     //   if (pipeline.id === activePipelineId) {
@@ -356,6 +427,9 @@ export default function PipelineAppBar() {
           <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
             <Typography variant="body1" sx={{ color: "white" }}>Show Status</Typography>
           </Button>
+          <Button onClick={handleDialogOpen} sx={{ marginRight: '20px' }}>
+            <Typography variant="body1" sx={{ color: "white" }}>View Outputs</Typography>
+          </Button>
           {user ? (
             <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
               <Button
@@ -382,6 +456,9 @@ export default function PipelineAppBar() {
             </Box>
           ) : null}
         </Box>
+        <Button onClick={() => setExecutionHistoryOpen(true)} color="primary" variant="outlined">
+          View History
+        </Button>
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>
             Deploy pipeline
@@ -411,6 +488,82 @@ export default function PipelineAppBar() {
         onClose={() => setSaveSnackbarOpen(false)}
         message="Changes saved."
       />
+
+      {/* Execution History Dialog */}
+      <Dialog
+        open={executionHistoryOpen}
+        onClose={() => setExecutionHistoryOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Execution History</DialogTitle>
+        <DialogContent>
+          <Paper>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Timestamp</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {executionHistory.length > 0 ? (
+                  executionHistory.map((entry, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{entry.timestamp}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={1} align="center">
+                      No execution history available.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Paper>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setExecutionHistoryOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+      {/* Pipeline Outputs Dialog */}
+      <Dialog open={open} onClose={handleDialogClose}>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">Pipeline Outputs</Typography>
+          <Button onClick={downloadAllFiles} color="primary" variant="outlined">
+            Download All
+          </Button>
+        </DialogTitle>
+        <DialogContent>
+          {/* {outputs.map((output, index) => ( */}
+          {exampleOutputs.map((output, index) => (
+            <Grid container key={index} alignItems="center" sx={{ mb: 1 }}>
+              <Grid item xs={8}>
+                <Typography>{output.name}</Typography>
+              </Grid>
+              <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  onClick={() => downloadFile(output.name, output.content)}
+                  color="primary"
+                  variant="outlined"
+                >
+                  Download
+                </Button>
+              </Grid>
+            </Grid>
+          ))}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'flex-end' }}>
+          <Button onClick={handleDialogClose} color="primary" variant="text">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Status Table Modal */}
       <Modal
