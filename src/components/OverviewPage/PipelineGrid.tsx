@@ -1,7 +1,6 @@
-import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
 import PipelineCard from "./PipelineCard";
 import { Button, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -16,42 +15,10 @@ import { toPng } from "html-to-image";
 import { getNodesBounds, getViewportForBounds } from "reactflow";
 import { v4 as uuidv4 } from "uuid";
 import { getDataSinks, getResources } from "../../redux/selectors/apiSelector";
-import { fetchRepositoryResources } from "../../services/backendAPI";
 import { downloadResource } from "../../services/backendAPI";
 import { useEffect, useState } from "react";
 import { OutputFile } from "./PipelineCard";
 import { fetchPipelineStatus } from "../../services/backendAPI";
-
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
-  color: theme.palette.text.secondary,
-}));
-
-const exampleOutputs = [
-  {
-    name: "raw_event_log.txt",
-    content: "This is the raw event log data...\nTimestamp: 2024-01-01 12:00:00\nEvent: Start Process\n...",
-  },
-  {
-    name: "filtered_cleaned_log.txt",
-    content: "This is the filtered and cleaned log data...\nTimestamp: 2024-01-01 12:05:00\nEvent: Cleaned Entry\n...",
-  },
-  {
-    name: "activity_mappings_output.txt",
-    content: "Activity mappings:\nActivity A -> Step 1\nActivity B -> Step 2\n...",
-  },
-  {
-    name: "dependency_graph_intermediate.txt",
-    content: "Intermediate dependency graph representation:\nNode A -> Node B\nNode B -> Node C\n...",
-  },
-  {
-    name: "final_conformance_summary.txt",
-    content: "Final conformance summary:\nTotal conformance: 95%\nDeviations: 5%\n...",
-  }
-];
 
 export default function AutoGrid() {
   const navigate = useNavigate();
@@ -147,18 +114,6 @@ export default function AutoGrid() {
 
   function getPipelineOutput() {
     if (!dataSinks) return [];
-
-    /*return dataSinks.map((dataSink) => {
-      const orgId = dataSink.data.instantiationData.resource.organizationId;
-      const repoId = dataSink.data.instantiationData.resource.repositoryId;
-      const filename = dataSink.data.instantiationData.resource.name;
-      console.log(resources);
-      const resource = resources.find((resource) => resource.organizationId === orgId && resource.repositoryId === repoId && resource.name === filename);
-      const resourceId = resource ? resource.id : "not found";
-      return [`orgId : ${orgId}, repoId : ${repoId}, fileName : ${filename}, resource_Id : ${resourceId}`];
-    });*/
-
-
     const outputPromises = dataSinks.map(async (dataSink) => {
       const orgId = dataSink.data.instantiationData.resource.organizationId;
       const repoId = dataSink.data.instantiationData.resource.repositoryId;
@@ -198,7 +153,7 @@ export default function AutoGrid() {
   }
 
   const fetchPipelineStatuses = async () => {
-    const statusPromises = pipelines.map(async ({id, name, pipeline, imgData, history, orgId, repoId, excecId}) => {
+    const statusPromises = pipelines.map(async ({ id, name, pipeline, imgData, history, orgId, repoId, excecId }) => {
       try {
         const validOrgId = orgId ?? "defaultOrgId";
         const validRepoId = repoId ?? "defaultRepoId";
