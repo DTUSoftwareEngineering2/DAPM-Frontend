@@ -29,10 +29,7 @@ const Login = () => {
     try {
       const response = await axios.post(
         "Auth/login",
-        JSON.stringify({ email, password: pwd }),
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        JSON.stringify({ email, password: pwd })
       );
       setAuth({
         email,
@@ -42,8 +39,6 @@ const Login = () => {
       });
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("role", response.data.user.userRole.toString());
-      // console.log("ROLE", response.data.user.userRole);
-      // console.log("ROLE", localStorage.getItem("role"));
       setEmail("");
       setPwd("");
       navigate(from, { replace: true });
