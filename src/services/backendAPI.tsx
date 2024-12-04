@@ -646,7 +646,7 @@ export async function putOperator(
   formData: FormData
 ) {
   try {
-    const response = await axiosPrivate.post(
+    const response = await axiosPrivateNoJson.post(
       `/Organizations/${orgId}/repositories/${repId}/resources/operators`,
       formData
     );
