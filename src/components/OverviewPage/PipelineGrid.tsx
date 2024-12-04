@@ -1,11 +1,12 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import PipelineCard from "./PipelineCard";
-import { Button } from "@mui/material";
+import { Button, IconButton, Menu, MenuItem } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { addNewPipeline, setImageData, deletePipeline, duplicatePipeline } from "../../redux/slices/pipelineSlice";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addNewPipeline, setImageData } from "../../redux/slices/pipelineSlice";
 import { getPipelines } from "../../redux/selectors";
 import FlowDiagram from "./ImageGeneration/FlowDiagram";
 import ReactDOM from "react-dom";
@@ -16,6 +17,7 @@ import { getDataSinks, getResources } from "../../redux/selectors/apiSelector";
 import { downloadResource } from "../../services/backendAPI";
 import { useEffect, useState } from "react";
 import { OutputFile } from "./PipelineCard";
+import { fetchPipelineStatus } from "../../services/backendAPI";
 
 export default function AutoGrid() {
   const navigate = useNavigate();
@@ -23,6 +25,26 @@ export default function AutoGrid() {
   const dispatch = useDispatch();
 
   const pipelines = useSelector(getPipelines);
+  const [pipelineStatuses, setPipelineStatuses] = useState<{ [key: string]: string }>({});
+  const [anchorElMap, setAnchorElMap] = useState<{ [key: string]: HTMLElement | null }>({});
+
+  const handleMenuClick = (id: string, event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElMap((prev) => ({ ...prev, [id]: event.currentTarget }));
+  };
+
+  const handleClose = (id: string) => {
+    setAnchorElMap((prev) => ({ ...prev, [id]: null }));
+  };
+
+  const handleDelete = (pipelineId: string) => {
+    dispatch(deletePipeline(pipelineId));  // Dispatch the delete action
+    setAnchorElMap((prev) => ({ ...prev, [pipelineId]: null }));  // Close the menu
+  }
+
+  const handleDuplicate = (pipelineId: string) => {
+    dispatch(duplicatePipeline(pipelineId)); // Dispatch the duplicate action
+    setAnchorElMap((prev) => ({ ...prev, [pipelineId]: null }));  // Close the menu
+  };
 
   const createNewPipeline = () => {
     dispatch(
@@ -88,21 +110,20 @@ export default function AutoGrid() {
 
   const dataSinks = useSelector(getDataSinks);
   const resources = useSelector(getResources);
-  
+
   function getPipelineOutput() {
     if (!dataSinks) return [];
-
     const outputPromises = dataSinks.map(async (dataSink) => {
       const orgId = dataSink.data.instantiationData.resource.organizationId;
       const repoId = dataSink.data.instantiationData.resource.repositoryId;
       const filename = dataSink.data.instantiationData.resource.name;
-      
-      const resource = resources.find((resource) => 
-        resource.organizationId === orgId && 
-        resource.repositoryId === repoId && 
+
+      const resource = resources.find((resource) =>
+        resource.organizationId === orgId &&
+        resource.repositoryId === repoId &&
         resource.name === filename
       );
-  
+
       if (!resource) {
         return {
           name: filename,
@@ -113,7 +134,7 @@ export default function AutoGrid() {
       try {
         const downloadResponse = await downloadResource(orgId, repoId, resource.id);
         const fileContent = await downloadResponse.text();
-        
+
         return {
           name: filename,
           content: fileContent
@@ -126,8 +147,32 @@ export default function AutoGrid() {
         };
       }
     });
-  
+
     return Promise.all(outputPromises);
+  }
+
+  const fetchPipelineStatuses = async () => {
+    const statusPromises = pipelines.map(async ({ id, name, pipeline, imgData, history, orgId, repoId, excecId }) => {
+      try {
+        const validOrgId = orgId ?? "defaultOrgId";
+        const validRepoId = repoId ?? "defaultRepoId";
+        const validExecId = excecId ?? "defaultExecId";
+
+        const statusResponse = await fetchPipelineStatus(validOrgId, validRepoId, id, validExecId); // Fetch pipeline status
+        const statusText = await statusResponse;
+        return { id, status: statusText };
+      } catch (error) {
+        console.error(`Error fetching status for pipeline ${id}:`, error);
+        return { id, status: "Error fetching status" };
+      }
+    });
+
+    const statuses = await Promise.all(statusPromises);
+    const statusesMap = statuses.reduce(
+      (acc, { id, status }) => ({ ...acc, [id]: status }),
+      {}
+    );
+    setPipelineStatuses(statusesMap);
   }
 
   const [outputs, setOutputs] = useState<OutputFile[]>([]);
@@ -137,9 +182,13 @@ export default function AutoGrid() {
       const results = await getPipelineOutput();
       setOutputs(results);
     };
-    
+
     fetchOutputs();
   }, [dataSinks, resources]);
+
+  useEffect(() => {
+    fetchPipelineStatuses(); // Fetch statuses when pipelines change
+  }, [pipelines]);
 
   return (
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }}>
@@ -156,18 +205,65 @@ export default function AutoGrid() {
         Create New
       </Button>
       <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: "10px" }}>
-        {pipelines.map(({ id, name, imgData }) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} xl={3}>
-            <PipelineCard
-              id={id}
-              name={name}
-              imgData={imgData}
-              status={"completed"}
-              outputs={outputs}
-            ></PipelineCard>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+        {
+          pipelines.map(({ id, name, imgData, orgId, repoId, excecId }) => {
+            //console.log("SJDHFSHFGSJHFDG" + pipelineStatuses[id])
+            const open = Boolean(anchorElMap[id]);
+            // console.log("org: " + orgId);
+            // console.log("rep: " + repoId);
+            // console.log("exec: " + excecId);
+
+            return (
+              <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={id}>
+                <Paper elevation={3} sx={{ position: "relative" }}>
+                  <IconButton
+                    aria-label="more options"
+                    onClick={(event) => handleMenuClick(id, event)}
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      zIndex: 1000,
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  {/* <span>Menu Button Here</span> */}
+                  <Menu
+                    anchorEl={anchorElMap[id]}
+                    open={open}
+                    onClose={() => handleClose(id)}
+                    PaperProps={{
+                      style: {
+                        width: '150px',
+                      },
+                    }}
+                  >
+                    {/* <MenuItem onClick={() => handleClose(id)}>Rename</MenuItem> */}
+                    <MenuItem onClick={() => handleDuplicate(id)}>Duplicate</MenuItem>
+                    <MenuItem
+                      onClick={() => handleDelete(id)}
+                      sx={{ color: 'red' }}
+                    >
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                  <PipelineCard
+                    id={id}
+                    name={name}
+                    imgData={imgData}
+                    status={pipelineStatuses[id] || "Fetching..."}
+                    //status={"completed"}
+                    outputs={outputs}
+                  ></PipelineCard>
+
+                </Paper>
+              </Grid>
+            );
+          })
+        }
+
+      </Grid >
+    </Box >
   );
 }

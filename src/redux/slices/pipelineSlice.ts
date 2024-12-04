@@ -1,4 +1,5 @@
 import { addEdge as addFlowEdge, applyEdgeChanges, applyNodeChanges, Connection, Edge, EdgeChange, MarkerType, Node, NodeChange } from "reactflow";
+import { v4 as uuidv4 } from 'uuid';
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { EdgeData, NodeData, NodeState, PipelineData, PipelineState } from "../states/pipelineState";
@@ -30,6 +31,25 @@ const pipelineSlice = createSlice({
       var pipeline = state.pipelines.find(pipeline => pipeline.id === payload.id)
       if (!pipeline) return
       pipeline.imgData = payload.imgData
+    },
+    deletePipeline: (state, { payload }: PayloadAction<string>) => {
+      state.pipelines = state.pipelines.filter(pipeline => pipeline.id !== payload);
+      // Reset activePipelineId if the deleted pipeline was active
+      if (state.activePipelineId === payload) {
+        state.activePipelineId = '';
+      }
+    },
+    duplicatePipeline: (state, action: PayloadAction<string>) => {
+      const pipelineToDuplicate = state.pipelines.find(pipeline => pipeline.id === action.payload);
+      if (pipelineToDuplicate) {
+        // Create a duplicate pipeline with the same flowData, but a new name and id
+        const newPipeline = {
+          ...pipelineToDuplicate,
+          id: `pipeline-${uuidv4()}`, // Generate a new ID
+          name: `${pipelineToDuplicate.name} COPY` // Append "COPY" to the name
+        };
+        state.pipelines.push(newPipeline);
+      }
     },
 
     // actions for undo and redo
@@ -113,6 +133,16 @@ const pipelineSlice = createSlice({
 
       // Update the handle's type
       handleToUpdate.type = newType;
+    },
+    updateInfo: (state, { payload }: PayloadAction<{ pipId?: string, orgId?: string, repoId?: string, execId?: string }>) => {
+      const activePipeline = state.pipelines.find(pipeline => pipeline.id === payload.pipId);
+      if (activePipeline) {
+        if (payload.orgId) activePipeline.orgId = payload.orgId;
+        if (payload.repoId) activePipeline.repoId = payload.repoId;
+        if (payload.execId) activePipeline.excecId = payload.execId;
+      } else {
+        console.error("Pipeline not found for ID:", payload.pipId);
+      }
     },
     
     updateNode: (state, { payload }: PayloadAction<Node<NodeData> | undefined>) => {
@@ -199,7 +229,8 @@ export const {
   addNewPipeline, 
   setActivePipeline, 
   setImageData, 
-  
+  deletePipeline,
+  duplicatePipeline,
   // actions for undo and redo
   undo,
   redo,
@@ -209,6 +240,7 @@ export const {
   updateSourceHandle,
   updateTargetHandle,
   updatePipelineName, 
+  updateInfo,
   addHandle, 
   updateNode, 
   addNode, 

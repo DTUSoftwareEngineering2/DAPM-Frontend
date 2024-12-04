@@ -1,17 +1,18 @@
-import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from "@mui/material";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Switch } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import React, { useState, useEffect, useContext } from "react";
-import { setDataSinks, updatePipelineName } from "../../redux/slices/pipelineSlice";
+import { setDataSinks, updatePipelineName, updateInfo } from "../../redux/slices/pipelineSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import { Node } from "reactflow";
 import {
   DataSinkNodeData,
   DataSourceNodeData,
   OperatorNodeData,
+  PipelineData,
 } from "../../redux/states/pipelineState";
 import {
   putCommandStart,
@@ -23,7 +24,9 @@ import {
 import {
   getOrganizations,
   getRepositories,
+  getPipelineState
 } from "../../redux/selectors/apiSelector";
+import { getPipelines } from "../../redux/selectors";
 import { getHandleId, getNodeId } from "./Flow";
 import AuthContext from "../../context/AuthProvider";
 import { User, getUserInfo } from "../../redux/userStatus"
@@ -85,8 +88,11 @@ export default function PipelineAppBar() {
   const [isTableOpen, setIsTableOpen] = useState(false);
 
   const [open, setOpen] = React.useState(false);  // State to control dialog open/close
-  const [outputs, setOutputs] = useState([]);  
+  const [outputs, setOutputs] = useState([]);
   const [executionHistoryOpen, setExecutionHistoryOpen] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [saveSnackbarOpen, setSaveSnackbarOpen] = useState(false);
 
   const toggleTable = () => {
     setIsTableOpen((prev) => !prev);
@@ -108,13 +114,29 @@ export default function PipelineAppBar() {
     event.stopPropagation();  // Prevent triggering the navigation when clicking the smaller button
     setOpen(true);  // Set the dialog state to true (open)
   };
-  
+
   const handleDialogClose = () => {
     setOpen(false);  // Set the dialog state to false (close)
   };
 
+  const handleToggleChange = () => {
+    setIsPrivate((prev) => !prev);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleSavePipeline = () => {
+    // TODO: Add logic to save the public pipeline (upload it to the backend) here.
+    setSaveSnackbarOpen(true);
+  };
+
+  const state = useSelector(getPipelineState)
   const organizations = useSelector(getOrganizations);
   const repositories = useSelector(getRepositories);
+  const pipelines = useSelector(getPipelines);
 
   const pipelineName = useSelector(getActivePipeline)?.name;
 
@@ -133,7 +155,7 @@ export default function PipelineAppBar() {
       return {
         sourceHandle: edge.sourceHandle,
         targetHandle: edge.targetHandle,
-        data : edge.data?.filename
+        data: edge.data?.filename
       };
     });
 
@@ -184,7 +206,7 @@ export default function PipelineAppBar() {
 
     dispatch(setDataSinks(dataSinks));
     console.log(JSON.stringify(dataSinks));
-    
+
     const requestData = {
       name: pipelineName,
       pipeline: {
@@ -248,27 +270,31 @@ export default function PipelineAppBar() {
           return {
             sourceHandle: edge.sourceHandle,
             targetHandle: edge.targetHandle,
-            data : edge.data,
+            data: edge.data,
           };
         }),
       },
     };
 
+    console.log(JSON.stringify(requestData));
+
+    const activePipelineId = state.activePipelineId;
     const selectedOrg = organizations[0];
     const selectedRepo = repositories.filter(
       (repo) => repo.organizationId === selectedOrg.id
     )[0];
+
 
     const pipelineId = await putPipeline(
       selectedOrg.id,
       selectedRepo.id,
       requestData
     );
-    
+
     const sendData = await setExecutionDate(
       selectedOrg.id,
       selectedRepo.id,
-      pipelineId, 
+      pipelineId,
       new Date().toISOString()
     );
 
@@ -285,13 +311,13 @@ export default function PipelineAppBar() {
     );
 
     console.log(dateListString)
-    
+
     // Parsing the dateListString into an array
     let dateList = dateListString
       .replace(/\[|\]/g, '')
       .split(/\s*,\s*/)
       .map((date: string) => date.replace(/"/g, '').trim());
-    
+
     setExecutionHistory(dateList.map((date: string) => ({ timestamp: date })));
 
     const executionId = await putExecution(
@@ -299,14 +325,61 @@ export default function PipelineAppBar() {
       selectedRepo.id,
       pipelineId
     );
-    
+
     const result = await putCommandStart(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId,
       executionId
     );
-  }
+
+    // pipelines.forEach((pipeline) => {
+    //   console.log(pipelineId)
+    //   if (pipeline.id === activePipelineId) {
+    //     pipeline.orgId = selectedOrg.id;
+    //     pipeline.repoId = selectedRepo.id;
+    //     pipeline.excecId = executionId;
+    //     // let pip = {
+    //     //   id: pipeline.id,
+    //     //   name: pipeline.name,
+    //     //   pipeline: pipeline.pipeline,
+    //     //   imgData: pipeline.imgData,
+    //     //   history: pipeline.history,
+    //     //   orgId: selectedOrg.id,
+    //     //   repoId: selectedRepo.id,
+    //     //   excecId: executionId,
+    //     // }
+
+    //     // pipeline = pip
+    //   }
+    // });
+
+    // pipelines.map((pipeline) => {
+    //   if (pipeline.id === activePipelineId) {
+    //     console.log(`Updating pipeline with ID: ${pipeline.id}`);
+    //     const updatedPipeline = {
+    //       ...pipeline,
+    //       orgId: selectedOrg.id,
+    //       repoId: selectedRepo.id,
+    //       excecId: executionId,
+    //     };
+    //     console.log("Updated pipeline:", updatedPipeline);
+    //     return updatedPipeline;
+    //   }
+    //   return pipeline;
+    // });
+
+    pipelines.forEach((pipeline) => {
+      if (pipeline.id === activePipelineId) {
+        dispatch(updateInfo({
+          pipId: pipeline.id,
+          orgId: selectedOrg.id,
+          repoId: selectedRepo.id,
+          execId: executionId,
+        }));
+      }
+    });
+  };
 
   const [user, setUser] = useState<User | null>(null);
 
@@ -391,13 +464,36 @@ export default function PipelineAppBar() {
             Deploy pipeline
           </Typography>
         </Button>
+        <Box display="flex" alignItems="center">
+          <Typography variant="body1" sx={{ marginRight: 1 }}>
+            {isPrivate ? "Private" : "Public"}
+          </Typography>
+          <Switch checked={!isPrivate} onChange={handleToggleChange} />
+          {!isPrivate && (
+            <Tooltip title="Save your changes and upload them to make them visible to others who have access to this pipeline." arrow>
+              <Button color="inherit" onClick={handleSavePipeline}>Save Pipeline</Button>
+            </Tooltip>
+          )}
+        </Box>
       </Toolbar >
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message={`Pipeline visibility updated to ${isPrivate ? "Private" : "Public"}.`}
+      />
+      <Snackbar
+        open={saveSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSaveSnackbarOpen(false)}
+        message="Changes saved."
+      />
 
       {/* Execution History Dialog */}
-      <Dialog 
-        open={executionHistoryOpen} 
-        onClose={() => setExecutionHistoryOpen(false)} 
-        maxWidth="sm" 
+      <Dialog
+        open={executionHistoryOpen}
+        onClose={() => setExecutionHistoryOpen(false)}
+        maxWidth="sm"
         fullWidth
       >
         <DialogTitle>Execution History</DialogTitle>
@@ -451,8 +547,8 @@ export default function PipelineAppBar() {
                 <Typography>{output.name}</Typography>
               </Grid>
               <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button 
-                  onClick={() => downloadFile(output.name, output.content)} 
+                <Button
+                  onClick={() => downloadFile(output.name, output.content)}
                   color="primary"
                   variant="outlined"
                 >
@@ -541,6 +637,7 @@ export default function PipelineAppBar() {
             <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
             <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
             <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
+            <Typography variant="body1"><strong>Role :</strong> {selectedUser.role}</Typography>
             <Button onClick={logout} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
             <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
           </Box>
