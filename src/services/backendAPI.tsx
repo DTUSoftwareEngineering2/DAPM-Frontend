@@ -3,12 +3,17 @@ import { Stream } from "stream";
 import { json } from "stream/consumers";
 import axios from "axios";
 
+// s232976
+// Private and Public axios instance for secured and unsecured endpoints
+// refactor to use one axios instance
 const vmPath = "se2-c.compute.dtu.dk:5000";
 const localPath = `localhost:5000`;
 
 const path = vmPath;
 const BASE_URL = `http://` + path;
 
+// Axios private instance uses Bearer token,
+// adds authorization header which is the access token, later validated server side
 export const axiosPrivateNoJson = axios.create({
   baseURL: BASE_URL,
 });
@@ -49,6 +54,7 @@ function getAccessToken() {
   return localStorage.getItem("accessToken");
 }
 
+// public axios instance, does not use Bearer token
 export default axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
@@ -61,33 +67,36 @@ export async function fetchPipelineStatus(
   execId: string
 ) {
   try {
-    const newpipId = pipId.slice(9)
-    const url = `http://` + path + `/Organizations/${orgId}/repositories/${repoId}/pipelines/${newpipId}/executions/${execId}/status`;
-    console.log("I AM HEEEEEEERE")
+    const newpipId = pipId.slice(9);
+    const url =
+      `http://` +
+      path +
+      `/Organizations/${orgId}/repositories/${repoId}/pipelines/${newpipId}/executions/${execId}/status`;
+    console.log("I AM HEEEEEEERE");
 
     const response = await fetch(url);
     //console.log(response)
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     const statusTicket = await response.text(); // Since 'accept: text/plain', we use response.text()
     const parsedData = JSON.parse(statusTicket);
     const ticket = parsedData.ticketId;
     const getData = async (ticketId: string): Promise<any> => {
-      console.log("I got inside")
+      console.log("I got inside");
       const maxRetries = 10;
       const delay = (ms: number) =>
         new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
-        console.log("im here for the " + retries + "th time")
+        console.log("im here for the " + retries + "th time");
         try {
           const statusResponse = await fetchStatus(ticketId);
           //console.log("NUMBER " + statusResponse.status)
           if (statusResponse.status > 0) {
             // const status = await statusResponse.text();
             // console.log("good status :)" + status)
-            return statusResponse
+            return statusResponse;
           }
           //console.log(statusResponse)
 
@@ -103,9 +112,9 @@ export async function fetchPipelineStatus(
 
     const status = await getData(ticket);
     //console.log("END RESULT " + status.result.status.state)
-    return status.result.status.state
+    return status.result.status.state;
   } catch (error) {
-    console.error('Error fetching pipeline status', error);
+    console.error("Error fetching pipeline status", error);
     throw error;
   }
 }
@@ -937,7 +946,8 @@ export async function getExecutionDate(
     // Fetch additional data recursively
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
-      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+      const delay = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {
@@ -971,16 +981,15 @@ export async function setExecutionDate(
   executionDate: string
 ) {
   try {
-
     const date = new Date(executionDate);
 
     // Extract year, month, day, hour, minute, and second
     const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
 
     // Format the output
     const formattedDate = `${year}-${month}-${day}%20${hours}%3A${minutes}%3A${seconds}`;
@@ -1001,7 +1010,8 @@ export async function setExecutionDate(
     // Fetch additional data recursively
     const getData = async (ticketId: string): Promise<any> => {
       const maxRetries = 10;
-      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+      const delay = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms));
 
       for (let retries = 0; retries < maxRetries; retries++) {
         try {

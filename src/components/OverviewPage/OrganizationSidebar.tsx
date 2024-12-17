@@ -65,9 +65,7 @@ export default function PersistentDrawerLeft() {
   }
 
   const [user, setUser] = useState<User | null>(null);
-
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
   const [users, setUsers] = useState<User[]>([]);
   const [showUsers, setShowUsers] = useState(false);
 
@@ -102,6 +100,8 @@ export default function PersistentDrawerLeft() {
     }
   }, []);
 
+  // s232976
+  // handle response for accetping and declinling users into organization, refresh view afterwards
   const handleAdminResponse = async (
     userId: string,
     accept: number,
@@ -112,7 +112,8 @@ export default function PersistentDrawerLeft() {
       await fetchAndSetUsers();
     }
   };
-
+  //s232976
+  // function to delete user from organization
   const handleDeleteUser = async (userId: string) => {
     if (auth.accessToken) {
       await DeleteUser(auth.accessToken, userId);
@@ -274,6 +275,8 @@ export default function PersistentDrawerLeft() {
           </>
         ))}
       </List>
+      {/* Logic to handle view of the user list, 
+        the user list will be displayed based on the showUsers state which is triggered by a button*/}
       {showUsers && (
         <Box
           sx={{
@@ -307,6 +310,8 @@ export default function PersistentDrawerLeft() {
                 opacity: 0.8,
               },
             }}
+            // s232976
+            // extra X button to close the user list, updates the showUsers state
             onClick={() => setShowUsers(false)}>
             X
           </Button>
@@ -322,10 +327,12 @@ export default function PersistentDrawerLeft() {
               padding: "0",
               gap: "8px",
             }}>
+            {/* s232976, sort users based on their role, unaccepted users will be displayed first, accepted users will be displayed last */}
             {users
               .sort((a, b) =>
                 a.accepted === b.accepted ? 0 : a.accepted ? 1 : -1
               )
+              // mapping users to a list item with buttons for each user
               .map(rand_user => (
                 <ListItem
                   key={rand_user.id}
@@ -352,6 +359,7 @@ export default function PersistentDrawerLeft() {
                       justifyContent: "flex-end",
                       marginLeft: "10px",
                     }}>
+                    {/* s232976, conditional rendering of buttons based on user's role and the user's accepted status */}
                     {rand_user.accepted === 1 ? (
                       <>
                         <Button
@@ -378,7 +386,7 @@ export default function PersistentDrawerLeft() {
                         ) : (
                           ""
                         )}
-
+                        {/* s232976, adding manager role handling with buttons, only available for admins */}
                         {(rand_user.role === 0 || rand_user.role === 3) &&
                         (auth.role === 1 ||
                           localStorage.getItem("role") === "1") ? (
@@ -396,6 +404,7 @@ export default function PersistentDrawerLeft() {
                         )}
                       </>
                     ) : (
+                      // s232976, conditional rendering of buttons, accept and decline buttons to handle unaccepted users
                       <>
                         <Button
                           variant="contained"
@@ -423,7 +432,7 @@ export default function PersistentDrawerLeft() {
           </List>
         </Box>
       )}
-
+      {/* s232976, completely hide functionality by removing trigger button from non admin or manager users */}
       {(auth.role === 1 ||
         localStorage.getItem("role") === "1" ||
         auth.role === 2 ||

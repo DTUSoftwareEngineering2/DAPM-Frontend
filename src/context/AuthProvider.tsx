@@ -1,5 +1,9 @@
 import React, { createContext, useEffect, useState } from "react";
 
+// s232976
+// context for user authentication
+// used for authentication and authorization
+// contains the user's email, password, access token and role in machine storage and local storage
 type AuthContextType = {
   auth: {
     email?: string;
@@ -31,6 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return savedToken ? { accessToken: savedToken } : {};
   });
 
+  // logout function
   const logout = () => {
     setAuth({});
     localStorage.removeItem("accessToken");
@@ -44,7 +49,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (auth.role) {
       localStorage.setItem("role", auth.role.toString());
     }
-    // console.log("Auth state updated:", auth);
   }, [auth]);
 
   return (
