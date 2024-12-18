@@ -187,6 +187,7 @@ const pipelineSlice = createSlice({
 
       activeFlowData.edges = payload;
     },
+    // s242147 and s241747 : Implementing the setDataSinks action
     setDataSinks(state, action: PayloadAction<any[]>) {
       state.dataSinks = action.payload;
     },

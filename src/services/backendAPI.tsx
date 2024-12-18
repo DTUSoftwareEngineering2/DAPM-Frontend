@@ -488,9 +488,6 @@ export async function putPipeline(
   repId: string,
   pipelineData: any
 ) {
-  console.log("put pipeline");
-  console.log(orgId + " " + repId);
-  console.log(pipelineData);
   try {
     const response = await fetch(
       `http://${path}/Organizations/${orgId}/repositories/${repId}/pipelines`,
