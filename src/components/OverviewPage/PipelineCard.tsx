@@ -39,26 +39,6 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
   const [open, setOpen] = React.useState(false);  // State to control dialog open/close
   const [isPrivate, setIsPrivate] = React.useState(true);
 
-  /* // Fetch pipeline visibility  from the backend
-  useEffect(() => {
-    // Fetch the pipeline visibility from the backend and update the state
-    const fetchPipelineState = async () => {
-      try {
-        const response = await fetch('/api/pipeline/state');
-        const data = await response.json();
-        setIsPrivate(data.isPrivate);
-      } catch (error) {
-        console.error('Error fetching pipeline state:', error);
-      }
-    };
-    fetchPipelineState();
-  }, []);
-  */
-
-  const getLabelColor = () => {
-    return isPrivate ? '#6F42C1' : '#28A745';
-  };
-
   const navigateToPipeline = () => {
     dispatch(setActivePipeline(id));
     navigate('/pipeline');
@@ -124,20 +104,6 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
       <CardActionArea onClick={navigateToPipeline}>
         <CardMedia sx={{ height: 140 }} title={name} image={imgData} />
         <CardContent>
-          <Typography
-            variant="body2"
-            style={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              color: 'white',
-              backgroundColor: getLabelColor(),
-              padding: '4px 8px',
-              borderRadius: 4,
-            }}
-          >
-            {isPrivate ? 'Private' : 'Public'}
-          </Typography>
           <Typography gutterBottom variant="h5" component="div">
             {name}
           </Typography>
