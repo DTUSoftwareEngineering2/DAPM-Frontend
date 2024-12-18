@@ -152,6 +152,10 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
               zIndex: 2,
             }}
           />
+      {/* 
+      Author: Grace Ledin (s241742)
+      Description: This section includes a button to view outputs if the status is 'faulty' or 'completed'. It also includes a Dialog to display the pipeline's outputs with options to download individual files or all files at once.
+      */}
           {(status.toLowerCase() === 'faulty' || status.toLowerCase() === 'completed') && (
             <Button size="small" color="primary" onClick={handleDialogOpen}>
               View Outputs
@@ -200,6 +204,7 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
           </Button>
         </DialogActions>
       </Dialog>
+      {/* --------- end of Grace Ledin's part ----------- */}
     </Card>
   );
 }
