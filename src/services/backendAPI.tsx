@@ -927,7 +927,7 @@ export const validateUser = async (
 
 export const DeleteUser = async (accessToken: string, userId: string) => {
   try {
-    const response = await axiosPrivate.delete(`/Users/delete/${userId}`, {
+    const response = await axiosPrivate.get(`/Users/delete/${userId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
