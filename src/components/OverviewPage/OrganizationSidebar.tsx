@@ -64,6 +64,10 @@ export default function PersistentDrawerLeft() {
     window.open(url, "_blank");
   }
 
+  /**
+   * @author Thomas Corthay (s241749)
+   * @date 2024-10-18
+   */
   const [user, setUser] = useState<User | null>(null);
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -88,19 +92,24 @@ export default function PersistentDrawerLeft() {
     }
   };
 
-  // Toggle display of users and fetch them if needed
+  useEffect(() => {
+    if (auth?.accessToken) {
+      getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
+    }
+  }, []);
+  // --------- end of Thomas' Corthay part-----------
+
+  /**
+   * @author Thomas Corthay (s241749) & Ma
+   * @date 2024-10-18
+   * @description Toggle display of users and fetch them if needed
+   */
   const handleShowUsers = () => {
     if (!showUsers) {
       fetchAndSetUsers();
     }
     setShowUsers(!showUsers);
   };
-
-  useEffect(() => {
-    if (auth?.accessToken) {
-      getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
-    }
-  }, []);
 
   const handleAdminResponse = async (
     userId: string,
@@ -274,6 +283,14 @@ export default function PersistentDrawerLeft() {
           </>
         ))}
       </List>
+
+      {/**
+      * @author Thomas Corthay (s241749) & Màrk Gyöngyösi (s232976)
+      * @date 2024-10-18
+      * @description Renders a modal displaying a sortable, interactive list of users. 
+      * Includes functionality for accepting/rejecting users, deleting users, and managing roles with responsive buttons. 
+      */
+      }
       {showUsers && (
         <Box
           sx={{
@@ -424,6 +441,14 @@ export default function PersistentDrawerLeft() {
         </Box>
       )}
 
+
+    {/**
+    * @author Thomas Corthay (s241749) & Màrk Gyöngyösi (s232976)
+    * @date 2024-10-18
+    * @description Renders a button to toggle the visibility of the user list, displayed conditionally based on the user's role.
+    * The button text dynamically updates to reflect the current state (show or hide users). 
+    */
+    }
       {(auth.role === 1 ||
         localStorage.getItem("role") === "1" ||
         auth.role === 2 ||
@@ -441,6 +466,8 @@ export default function PersistentDrawerLeft() {
           {showUsers ? "Hide Users" : "Show All Users"}
         </Button>
       )}
+
+
       <Button
         onClick={logout}
         variant="contained"
@@ -448,6 +475,13 @@ export default function PersistentDrawerLeft() {
         sx={{ position: "fixed", bottom: 0, left: 0 }}>
         Logout
       </Button>
+
+
+      {/**
+      * @author Thomas Corthay (s241749)
+      * @date 2024-10-18
+      */
+      }
       {user ? (
         <Box
           sx={{
@@ -490,6 +524,12 @@ export default function PersistentDrawerLeft() {
           </Button>
         </Box>
       ) : null}
+
+      {/**
+      * @author Thomas Corthay (s241749)
+      * @date 2024-10-18
+      */
+      }
       {selectedUser && (
         <Box
           sx={{
