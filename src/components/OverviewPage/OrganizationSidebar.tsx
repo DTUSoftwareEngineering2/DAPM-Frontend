@@ -64,6 +64,10 @@ export default function PersistentDrawerLeft() {
     window.open(url, "_blank");
   }
 
+  /**
+   * @author Thomas Corthay (s241749)
+   * @date 2024-10-18
+   */
   const [user, setUser] = useState<User | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -86,7 +90,18 @@ export default function PersistentDrawerLeft() {
     }
   };
 
-  // Toggle display of users and fetch them if needed
+  useEffect(() => {
+    if (auth?.accessToken) {
+      getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
+    }
+  }, []);
+  // --------- end of Thomas' Corthay part-----------
+
+  /**
+   * @author Thomas Corthay (s241749) & Ma
+   * @date 2024-10-18
+   * @description Toggle display of users and fetch them if needed
+   */
   const handleShowUsers = () => {
     if (!showUsers) {
       fetchAndSetUsers();
@@ -194,7 +209,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map(resource =>
                     resource.repositoryId === repository.id &&
-                    resource.type !== "operator" ? (
+                      resource.type !== "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton
@@ -207,7 +222,7 @@ export default function PersistentDrawerLeft() {
                             <IconButton
                               edge="end"
                               aria-label="delete"
-                              onClick={() => {}}>
+                              onClick={() => { }}>
                               <DeleteIcon />
                             </IconButton>
                           </ListItemButton>
@@ -234,7 +249,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map(resource =>
                     resource.repositoryId === repository.id &&
-                    resource.type === "operator" ? (
+                      resource.type === "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton sx={{ paddingBlock: 0 }}>
@@ -245,7 +260,7 @@ export default function PersistentDrawerLeft() {
                             <IconButton
                               edge="end"
                               aria-label="delete"
-                              onClick={() => {}}>
+                              onClick={() => { }}>
                               <DeleteIcon />
                             </IconButton>
                           </ListItemButton>
@@ -277,6 +292,14 @@ export default function PersistentDrawerLeft() {
       </List>
       {/* Logic to handle view of the user list, 
         the user list will be displayed based on the showUsers state which is triggered by a button*/}
+
+      {/**
+      * @author Thomas Corthay (s241749) & Màrk Gyöngyösi (s232976)
+      * @date 2024-10-18
+      * @description Renders a modal displaying a sortable, interactive list of users. 
+      * Includes functionality for accepting/rejecting users, deleting users, and managing roles with responsive buttons. 
+      */
+      }
       {showUsers && (
         <Box
           sx={{
@@ -372,8 +395,8 @@ export default function PersistentDrawerLeft() {
                           Delete
                         </Button>
                         {rand_user.role === 2 &&
-                        (auth.role === 1 ||
-                          localStorage.getItem("role") === "1") ? (
+                          (auth.role === 1 ||
+                            localStorage.getItem("role") === "1") ? (
                           <Button
                             variant="contained"
                             color="primary"
@@ -388,8 +411,8 @@ export default function PersistentDrawerLeft() {
                         )}
                         {/* s232976, adding manager role handling with buttons, only available for admins */}
                         {(rand_user.role === 0 || rand_user.role === 3) &&
-                        (auth.role === 1 ||
-                          localStorage.getItem("role") === "1") ? (
+                          (auth.role === 1 ||
+                            localStorage.getItem("role") === "1") ? (
                           <Button
                             variant="contained"
                             color="primary"
@@ -433,23 +456,34 @@ export default function PersistentDrawerLeft() {
         </Box>
       )}
       {/* s232976, completely hide functionality by removing trigger button from non admin or manager users */}
+
+
+      {/**
+    * @author Thomas Corthay (s241749) & Màrk Gyöngyösi (s232976)
+    * @date 2024-10-18
+    * @description Renders a button to toggle the visibility of the user list, displayed conditionally based on the user's role.
+    * The button text dynamically updates to reflect the current state (show or hide users). 
+    */
+      }
       {(auth.role === 1 ||
         localStorage.getItem("role") === "1" ||
         auth.role === 2 ||
         localStorage.getItem("role") === "2") && (
-        <Button
-          onClick={handleShowUsers}
-          variant="contained"
-          color="primary"
-          sx={{
-            position: "fixed",
-            bottom: 48,
-            width: "240px",
-            height: "40px",
-          }}>
-          {showUsers ? "Hide Users" : "Show All Users"}
-        </Button>
-      )}
+          <Button
+            onClick={handleShowUsers}
+            variant="contained"
+            color="primary"
+            sx={{
+              position: "fixed",
+              bottom: 48,
+              width: "240px",
+              height: "40px",
+            }}>
+            {showUsers ? "Hide Users" : "Show All Users"}
+          </Button>
+        )}
+
+
       <Button
         onClick={logout}
         variant="contained"
@@ -457,6 +491,13 @@ export default function PersistentDrawerLeft() {
         sx={{ position: "fixed", bottom: 0, left: 0 }}>
         Logout
       </Button>
+
+
+      {/**
+      * @author Thomas Corthay (s241749)
+      * @date 2024-10-18
+      */
+      }
       {user ? (
         <Box
           sx={{
@@ -483,15 +524,15 @@ export default function PersistentDrawerLeft() {
               sx={
                 user
                   ? {
-                      width: "87px",
-                      height: "34px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontWeight: "bold",
-                      fontSize: "16px",
-                    }
+                    width: "87px",
+                    height: "34px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                  }
                   : {}
               }>
               {user ? user.firstName + " " + user.lastName[0] : ""}
@@ -499,6 +540,12 @@ export default function PersistentDrawerLeft() {
           </Button>
         </Box>
       ) : null}
+
+      {/**
+      * @author Thomas Corthay (s241749)
+      * @date 2024-10-18
+      */
+      }
       {selectedUser && (
         <Box
           sx={{
