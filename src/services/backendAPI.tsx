@@ -775,6 +775,17 @@ export async function downloadResource(
   }
 }
 
+/**
+ * @author Thomas Corthay (s241749)
+ * @date 2024-10-11
+ * @description Fetches detailed user information by making an authenticated request and polling 
+ * the ticket status until the data is available or retries are exhausted.
+ * Handles network errors and retries with a delay for polling ticket status.
+ * @param {string} accessToken - The access token for user authentication.
+ * @returns {Promise<Object>} - An object containing the user's information, including ID, name, organization ID, and email.
+ * @throws {Error} - If the network request fails or maximum retries are exceeded.
+ */
+
 export async function fetchUserInfo(accessToken: string) {
   try {
     const response = await axiosPrivate.get("/user/info", {
@@ -831,6 +842,15 @@ export async function fetchUserInfo(accessToken: string) {
     throw error; // Propagate error to the caller
   }
 }
+
+/**
+ * @author Thomas Corthay (s241749)
+ * @date 2024-11-07
+ * @description Fetches all users recursively using ticket-based polling.
+ * @param {string} accessToken - The access token for authentication.
+ * @returns {Promise<any>} - The user data retrieved from the server.
+ * @throws {Error} - If the network request fails or maximum retries are exceeded.
+ */
 
 export async function fetchUsers(accessToken: string) {
   try {
@@ -915,6 +935,19 @@ export const DeleteUser = async (accessToken: string, userId: string) => {
   }
 };
 
+/**
+ * @author Thomas Corthay (s241749)
+ * @date 24-12-04
+ * @description Fetches the execution date of a pipeline by making an initial request and recursively polling 
+ * the ticket status until the execution date is available or retries are exhausted.
+ * Handles network errors and retries with exponential backoff logic.
+ * @param {string} orgId - The ID of the organization.
+ * @param {string} repId - The ID of the repository.
+ * @param {string} pipeId - The ID of the pipeline.
+ * @returns {Promise<string>} - The execution date of the pipeline.
+ * @throws {Error} - If the network request fails or maximum retries are exceeded.
+ */
+
 export async function getExecutionDate(
   orgId: string,
   repId: string,
@@ -963,6 +996,19 @@ export async function getExecutionDate(
     throw error;
   }
 }
+
+/**
+ * @author Thomas Corthay (s241749)
+ * @date 2024-12-04
+ * @description Sets the execution date for a pipeline by formatting the date into a URL-compatible format,
+ * sending a POST request, and recursively polling for the updated data until it is available or retries are exhausted.
+ * @param {string} orgId - The ID of the organization.
+ * @param {string} repId - The ID of the repository.
+ * @param {string} pipeId - The ID of the pipeline.
+ * @param {string} executionDate - The desired execution date in ISO format.
+ * @returns {Promise<Object>} - The result of the updated execution date.
+ * @throws {Error} - If the network request fails or maximum retries are exceeded.
+ */
 
 export async function setExecutionDate(
   orgId: string,
