@@ -151,6 +151,7 @@ export default function PipelineAppBar() {
   const generateJson = async () => {
     const timestamp = new Date().toISOString();
 
+    // @s242147 and @s241747 : Added property fileName in the edges to get the filename of the data in the dataSink
     var edges = flowData!.edges.map((edge) => {
       return {
         sourceHandle: edge.sourceHandle,
@@ -204,6 +205,7 @@ export default function PipelineAppBar() {
       })
       .filter((node) => node !== undefined) as any;
 
+    // s242147 and s241747 : Set the property of DataSinks, unique to each pipeline so it can be accessed from another file
     dispatch(setDataSinks(dataSinks));
     console.log(JSON.stringify(dataSinks));
 
