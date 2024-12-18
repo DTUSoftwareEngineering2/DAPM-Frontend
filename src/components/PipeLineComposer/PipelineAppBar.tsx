@@ -1,39 +1,38 @@
-import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from "@mui/material";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Switch, Snackbar, Tooltip } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import React, { useState, useEffect, useContext } from "react";
-import { setDataSinks, updatePipelineName } from "../../redux/slices/pipelineSlice";
+import { setDataSinks, updatePipelineName, updateInfo } from "../../redux/slices/pipelineSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import { Node } from "reactflow";
 import {
   DataSinkNodeData,
   DataSourceNodeData,
   OperatorNodeData,
+  PipelineData,
 } from "../../redux/states/pipelineState";
 import {
   putCommandStart,
   putExecution,
   putPipeline,
+  setExecutionDate,
+  getExecutionDate
 } from "../../services/backendAPI";
 import {
   getOrganizations,
   getRepositories,
+  getPipelineState
 } from "../../redux/selectors/apiSelector";
+import { getPipelines } from "../../redux/selectors";
 import { getHandleId, getNodeId } from "./Flow";
 import AuthContext from "../../context/AuthProvider";
 import { User, getUserInfo } from "../../redux/userStatus"
 
 // Table columns data
 const tableColumns = ["Not running", "Running", "Completed"];
-
-const mockExecutionHistory = [
-  { time: "2024-11-20 14:00:00", status: "Completed", files: "output1.txt, output2.txt" },
-  { time: "2024-11-19 10:30:00", status: "Running", files: "output_temp.txt" },
-  { time: "2024-11-18 09:15:00", status: "Failed", files: "none" },
-];
 
 export interface OutputFile {
   name: string; // File name, e.g., "raw_event_log.txt"
@@ -89,8 +88,11 @@ export default function PipelineAppBar() {
   const [isTableOpen, setIsTableOpen] = useState(false);
 
   const [open, setOpen] = React.useState(false);  // State to control dialog open/close
-  const [outputs, setOutputs] = useState([]);  
+  const [outputs, setOutputs] = useState([]);
   const [executionHistoryOpen, setExecutionHistoryOpen] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [saveSnackbarOpen, setSaveSnackbarOpen] = useState(false);
 
   const toggleTable = () => {
     setIsTableOpen((prev) => !prev);
@@ -112,13 +114,29 @@ export default function PipelineAppBar() {
     event.stopPropagation();  // Prevent triggering the navigation when clicking the smaller button
     setOpen(true);  // Set the dialog state to true (open)
   };
-  
+
   const handleDialogClose = () => {
     setOpen(false);  // Set the dialog state to false (close)
   };
 
+  const handleToggleChange = () => {
+    setIsPrivate((prev) => !prev);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleSavePipeline = () => {
+    // TODO: Add logic to save the public pipeline (upload it to the backend) here.
+    setSaveSnackbarOpen(true);
+  };
+
+  const state = useSelector(getPipelineState)
   const organizations = useSelector(getOrganizations);
   const repositories = useSelector(getRepositories);
+  const pipelines = useSelector(getPipelines);
 
   const pipelineName = useSelector(getActivePipeline)?.name;
 
@@ -128,18 +146,17 @@ export default function PipelineAppBar() {
 
   const flowData = useSelector(getActiveFlowData);
 
-  const [history, setHistory] = useState<{ timestamp: string; data: any }[]>([]);
-
+  const [executionHistory, setExecutionHistory] = useState<{ timestamp: string; }[]>([]);
 
   const generateJson = async () => {
-    //console.log(flowData)
+    const timestamp = new Date().toISOString();
 
     // @s242147 and @s241747 : Added property fileName in the edges to get the filename of the data in the dataSink
     var edges = flowData!.edges.map((edge) => {
       return {
         sourceHandle: edge.sourceHandle,
         targetHandle: edge.targetHandle,
-        data : edge.data?.filename
+        data: edge.data?.filename
       };
     });
 
@@ -255,41 +272,115 @@ export default function PipelineAppBar() {
           return {
             sourceHandle: edge.sourceHandle,
             targetHandle: edge.targetHandle,
-            data : edge.data,
+            data: edge.data,
           };
         }),
       },
     };
 
-    // Set history to stock the new call
-    setHistory((prevHistory) => [
-      ...prevHistory,
-      { timestamp: new Date().toISOString(), data: requestData },
-    ]);
-
     console.log(JSON.stringify(requestData));
 
+    const activePipelineId = state.activePipelineId;
     const selectedOrg = organizations[0];
     const selectedRepo = repositories.filter(
       (repo) => repo.organizationId === selectedOrg.id
     )[0];
+
 
     const pipelineId = await putPipeline(
       selectedOrg.id,
       selectedRepo.id,
       requestData
     );
+
+    const sendData = await setExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId,
+      new Date().toISOString()
+    );
+
+    const dateListStrin = await getExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId
+    );
+
+    const dateListString = await getExecutionDate(
+      selectedOrg.id,
+      selectedRepo.id,
+      pipelineId
+    );
+
+    console.log(dateListString)
+
+    // Parsing the dateListString into an array
+    let dateList = dateListString
+      .replace(/\[|\]/g, '')
+      .split(/\s*,\s*/)
+      .map((date: string) => date.replace(/"/g, '').trim());
+
+    setExecutionHistory(dateList.map((date: string) => ({ timestamp: date })));
+
     const executionId = await putExecution(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId
     );
-    await putCommandStart(
+
+    const result = await putCommandStart(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId,
       executionId
     );
+
+    // pipelines.forEach((pipeline) => {
+    //   console.log(pipelineId)
+    //   if (pipeline.id === activePipelineId) {
+    //     pipeline.orgId = selectedOrg.id;
+    //     pipeline.repoId = selectedRepo.id;
+    //     pipeline.excecId = executionId;
+    //     // let pip = {
+    //     //   id: pipeline.id,
+    //     //   name: pipeline.name,
+    //     //   pipeline: pipeline.pipeline,
+    //     //   imgData: pipeline.imgData,
+    //     //   history: pipeline.history,
+    //     //   orgId: selectedOrg.id,
+    //     //   repoId: selectedRepo.id,
+    //     //   excecId: executionId,
+    //     // }
+
+    //     // pipeline = pip
+    //   }
+    // });
+
+    // pipelines.map((pipeline) => {
+    //   if (pipeline.id === activePipelineId) {
+    //     console.log(`Updating pipeline with ID: ${pipeline.id}`);
+    //     const updatedPipeline = {
+    //       ...pipeline,
+    //       orgId: selectedOrg.id,
+    //       repoId: selectedRepo.id,
+    //       excecId: executionId,
+    //     };
+    //     console.log("Updated pipeline:", updatedPipeline);
+    //     return updatedPipeline;
+    //   }
+    //   return pipeline;
+    // });
+
+    pipelines.forEach((pipeline) => {
+      if (pipeline.id === activePipelineId) {
+        dispatch(updateInfo({
+          pipId: pipeline.id,
+          orgId: selectedOrg.id,
+          repoId: selectedRepo.id,
+          execId: executionId,
+        }));
+      }
+    });
   };
 
   const [user, setUser] = useState<User | null>(null);
@@ -375,37 +466,64 @@ export default function PipelineAppBar() {
             Deploy pipeline
           </Typography>
         </Button>
+        <Box display="flex" alignItems="center">
+          <Typography variant="body1" sx={{ marginRight: 1 }}>
+            {isPrivate ? "Private" : "Public"}
+          </Typography>
+          <Switch checked={!isPrivate} onChange={handleToggleChange} />
+          {!isPrivate && (
+            <Tooltip title="Save your changes and upload them to make them visible to others who have access to this pipeline." arrow>
+              <Button color="inherit" onClick={handleSavePipeline}>Save Pipeline</Button>
+            </Tooltip>
+          )}
+        </Box>
       </Toolbar >
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message={`Pipeline visibility updated to ${isPrivate ? "Private" : "Public"}.`}
+      />
+      <Snackbar
+        open={saveSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSaveSnackbarOpen(false)}
+        message="Changes saved."
+      />
 
       {/* Execution History Dialog */}
-      <Dialog 
-        open={executionHistoryOpen} 
-        onClose={() => setExecutionHistoryOpen(false)} 
-        maxWidth="md" 
+      <Dialog
+        open={executionHistoryOpen}
+        onClose={() => setExecutionHistoryOpen(false)}
+        maxWidth="sm"
         fullWidth
       >
         <DialogTitle>Execution History</DialogTitle>
         <DialogContent>
-          <TableContainer component={Paper}>
+          <Paper>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Date/Time</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Output Files</TableCell>
+                  <TableCell>Timestamp</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {mockExecutionHistory.map((entry, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{entry.time}</TableCell>
-                    <TableCell>{entry.status}</TableCell>
-                    <TableCell>{entry.files}</TableCell>
+                {executionHistory.length > 0 ? (
+                  executionHistory.map((entry, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{entry.timestamp}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={1} align="center">
+                      No execution history available.
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
-          </TableContainer>
+          </Paper>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setExecutionHistoryOpen(false)} color="primary">
@@ -413,6 +531,7 @@ export default function PipelineAppBar() {
           </Button>
         </DialogActions>
       </Dialog>
+
 
       {/* Pipeline Outputs Dialog */}
       <Dialog open={open} onClose={handleDialogClose}>
@@ -430,8 +549,8 @@ export default function PipelineAppBar() {
                 <Typography>{output.name}</Typography>
               </Grid>
               <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button 
-                  onClick={() => downloadFile(output.name, output.content)} 
+                <Button
+                  onClick={() => downloadFile(output.name, output.content)}
                   color="primary"
                   variant="outlined"
                 >
@@ -520,6 +639,7 @@ export default function PipelineAppBar() {
             <Typography variant="body1"><strong>Status :</strong> {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}</Typography>
             <Typography variant="body1"><strong>Organization :</strong> {selectedUser.organizationid}</Typography>
             <Typography variant="body1"><strong>Email :</strong> {selectedUser.email}</Typography>
+            <Typography variant="body1"><strong>Role :</strong> {selectedUser.role}</Typography>
             <Button onClick={logout} sx={{ marginTop: '10px', marginLeft: '10px' }} color="error">Log Out</Button>
             <Button onClick={() => setSelectedUser(null)} sx={{ marginTop: '10px' }}>Close</Button>
           </Box>

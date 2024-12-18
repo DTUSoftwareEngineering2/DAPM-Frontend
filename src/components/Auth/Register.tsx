@@ -1,7 +1,6 @@
-import { useRef, useState, useEffect, useContext } from "react";
+import { useRef, useState, useEffect } from "react";
 import { AxiosError } from "axios";
 import axios from "../../services/backendAPI";
-import useAuth from "../../hooks/useAuth";
 import {
   faCheck,
   faTimes,
@@ -11,13 +10,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppSelector } from "../../hooks/hooks";
 import { getOrganizations } from "../../redux/selectors/apiSelector";
 import { Organization } from "../../redux/states/apiState";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const { setAuth } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
   const organizations: Organization[] = useAppSelector(getOrganizations);
 
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -28,19 +24,15 @@ const Register = () => {
   const [email, setUser] = useState("");
   const [validEmail, setValidEmail] = useState(false);
   const [emailFocus, setEmailFocus] = useState(false);
-
   const [pwd, setPwd] = useState("");
   const [validPwd, setValidPwd] = useState(false);
   const [pwdFocus, setPwdFocus] = useState(false);
-
   const [matchPwd, setMatchPwd] = useState("");
   const [validMatch, setValidMatch] = useState(false);
   const [matchFocus, setMatchFocus] = useState(false);
-
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [organization, setOrganization] = useState("");
-
   const [errMsg, setErrMsg] = useState("");
 
   useEffect(() => {
@@ -68,9 +60,8 @@ const Register = () => {
       setErrMsg("Invalid Entry");
       return;
     }
-    console.log(email, pwd);
     try {
-      const response = await axios.post(
+      await axios.post(
         "Auth/signup",
         JSON.stringify({
           email,
@@ -78,13 +69,8 @@ const Register = () => {
           firstName,
           organization,
           password: pwd,
-        }),
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        })
       );
-      // setAuth({ email, pwd, accessToken: response.data.accessToken });
-      // localStorage.setItem("accessToken", response.data.accessToken);
       navigate("/login", { replace: true });
     } catch (err) {
       if (err instanceof AxiosError) {
@@ -105,8 +91,7 @@ const Register = () => {
       <p
         ref={errRef}
         className={errMsg ? "errmsg" : "offscreen"}
-        aria-live="assertive"
-      >
+        aria-live="assertive">
         {errMsg}
       </p>
       <h1>Register</h1>
@@ -127,7 +112,7 @@ const Register = () => {
           id="email"
           ref={emailRef}
           autoComplete="off"
-          onChange={(e) => setUser(e.target.value)}
+          onChange={e => setUser(e.target.value)}
           value={email}
           required
           aria-invalid={validEmail ? "false" : "true"}
@@ -139,8 +124,7 @@ const Register = () => {
           id="uidnote"
           className={
             emailFocus && email && !validEmail ? "instructions" : "offscreen"
-          }
-        >
+          }>
           <FontAwesomeIcon icon={faInfoCircle} />
           3 to 32 characters.
           <br />
@@ -151,7 +135,7 @@ const Register = () => {
         <input
           type="text"
           id="lastName"
-          onChange={(e) => setLastName(e.target.value)}
+          onChange={e => setLastName(e.target.value)}
           value={lastName}
           required
         />
@@ -160,7 +144,7 @@ const Register = () => {
         <input
           type="text"
           id="firstName"
-          onChange={(e) => setFirstName(e.target.value)}
+          onChange={e => setFirstName(e.target.value)}
           value={firstName}
           required
         />
@@ -169,11 +153,10 @@ const Register = () => {
         <select
           id="organization"
           value={organization}
-          onChange={(e) => setOrganization(e.target.value)}
-          required
-        >
+          onChange={e => setOrganization(e.target.value)}
+          required>
           <option value="">Select organization</option>
-          {organizations.map((org) => (
+          {organizations.map(org => (
             <option key={org.id} value={org.id}>
               {org.name}
             </option>
@@ -193,7 +176,7 @@ const Register = () => {
         <input
           type="password"
           id="password"
-          onChange={(e) => setPwd(e.target.value)}
+          onChange={e => setPwd(e.target.value)}
           value={pwd}
           required
           aria-invalid={validPwd ? "false" : "true"}
@@ -203,8 +186,7 @@ const Register = () => {
         />
         <p
           id="pwdnote"
-          className={pwdFocus && !validPwd ? "instructions" : "offscreen"}
-        >
+          className={pwdFocus && !validPwd ? "instructions" : "offscreen"}>
           <FontAwesomeIcon icon={faInfoCircle} />
           8 to 24 characters.
           <br />
@@ -226,7 +208,7 @@ const Register = () => {
         <input
           type="password"
           id="confirm_pwd"
-          onChange={(e) => setMatchPwd(e.target.value)}
+          onChange={e => setMatchPwd(e.target.value)}
           value={matchPwd}
           required
           aria-invalid={validMatch ? "false" : "true"}
@@ -236,15 +218,13 @@ const Register = () => {
         />
         <p
           id="confirmnote"
-          className={matchFocus && !validMatch ? "instructions" : "offscreen"}
-        >
+          className={matchFocus && !validMatch ? "instructions" : "offscreen"}>
           <FontAwesomeIcon icon={faInfoCircle} />
           Must match the first password input field.
         </p>
 
         <button
-          disabled={!validEmail || !validPwd || !validMatch ? true : false}
-        >
+          disabled={!validEmail || !validPwd || !validMatch ? true : false}>
           Sign Up
         </button>
       </form>
