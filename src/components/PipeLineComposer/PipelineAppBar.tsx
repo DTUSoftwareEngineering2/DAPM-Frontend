@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Switch, Snackbar, Tooltip } from "@mui/material";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,6 @@ import {
   DataSinkNodeData,
   DataSourceNodeData,
   OperatorNodeData,
-  PipelineData,
 } from "../../redux/states/pipelineState";
 import {
   putCommandStart,
@@ -90,9 +89,6 @@ export default function PipelineAppBar() {
   const [open, setOpen] = React.useState(false);  // State to control dialog open/close
   const [outputs, setOutputs] = useState([]);
   const [executionHistoryOpen, setExecutionHistoryOpen] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(true);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [saveSnackbarOpen, setSaveSnackbarOpen] = useState(false);
 
   const toggleTable = () => {
     setIsTableOpen((prev) => !prev);
@@ -117,20 +113,6 @@ export default function PipelineAppBar() {
 
   const handleDialogClose = () => {
     setOpen(false);  // Set the dialog state to false (close)
-  };
-
-  const handleToggleChange = () => {
-    setIsPrivate((prev) => !prev);
-    setSnackbarOpen(true);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
-
-  const handleSavePipeline = () => {
-    // TODO: Add logic to save the public pipeline (upload it to the backend) here.
-    setSaveSnackbarOpen(true);
   };
 
   const state = useSelector(getPipelineState)
@@ -480,30 +462,7 @@ export default function PipelineAppBar() {
             Deploy pipeline
           </Typography>
         </Button>
-        <Box display="flex" alignItems="center">
-          <Typography variant="body1" sx={{ marginRight: 1 }}>
-            {isPrivate ? "Private" : "Public"}
-          </Typography>
-          <Switch checked={!isPrivate} onChange={handleToggleChange} />
-          {!isPrivate && (
-            <Tooltip title="Save your changes and upload them to make them visible to others who have access to this pipeline." arrow>
-              <Button color="inherit" onClick={handleSavePipeline}>Save Pipeline</Button>
-            </Tooltip>
-          )}
-        </Box>
       </Toolbar >
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        message={`Pipeline visibility updated to ${isPrivate ? "Private" : "Public"}.`}
-      />
-      <Snackbar
-        open={saveSnackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSaveSnackbarOpen(false)}
-        message="Changes saved."
-      />
 
       {/**
        * @author Thomas Corthay (s241749) & Grace Ledin (s241742)
@@ -553,7 +512,8 @@ export default function PipelineAppBar() {
       </Dialog>
 
 
-      {/* Pipeline Outputs Dialog */}
+      {/* Author: @s241742 */}
+      {/* Description: Pipeline Outputs Dialog */}
       <Dialog open={open} onClose={handleDialogClose}>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6">Pipeline Outputs</Typography>
