@@ -127,12 +127,17 @@ export default function PipelineAppBar() {
   };
 
   const flowData = useSelector(getActiveFlowData);
-
+  
+  /**
+  * @author Thomas Corthay (s241749) & Grace Ledin (s241742)
+  * @date 2024-12-04
+  */
   const [executionHistory, setExecutionHistory] = useState<{ timestamp: string; }[]>([]);
 
   const generateJson = async () => {
     const timestamp = new Date().toISOString();
 
+    // @s242147 and @s241747 : Added property fileName in the edges to get the filename of the data in the dataSink
     var edges = flowData!.edges.map((edge) => {
       return {
         sourceHandle: edge.sourceHandle,
@@ -186,6 +191,7 @@ export default function PipelineAppBar() {
       })
       .filter((node) => node !== undefined) as any;
 
+    // s242147 and s241747 : Set the property of DataSinks, unique to each pipeline so it can be accessed from another file
     dispatch(setDataSinks(dataSinks));
     console.log(JSON.stringify(dataSinks));
 
@@ -273,26 +279,22 @@ export default function PipelineAppBar() {
       requestData
     );
 
+    /**
+    * @author Thomas Corthay (s241749) & Grace Ledin (s241742)
+    * @date 2024-12-04
+    */
     const sendData = await setExecutionDate(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId,
       new Date().toISOString()
     );
-
-    const dateListStrin = await getExecutionDate(
-      selectedOrg.id,
-      selectedRepo.id,
-      pipelineId
-    );
-
+    
     const dateListString = await getExecutionDate(
       selectedOrg.id,
       selectedRepo.id,
       pipelineId
     );
-
-    console.log(dateListString)
 
     // Parsing the dateListString into an array
     let dateList = dateListString
@@ -301,6 +303,8 @@ export default function PipelineAppBar() {
       .map((date: string) => date.replace(/"/g, '').trim());
 
     setExecutionHistory(dateList.map((date: string) => ({ timestamp: date })));
+    
+    // --------- end of Thomas' Corthay & Grace's Ledin part-----------
 
     const executionId = await putExecution(
       selectedOrg.id,
@@ -363,6 +367,10 @@ export default function PipelineAppBar() {
     });
   };
 
+  /**
+  * @author Thomas Corthay (s241749)
+  * @date 2024-10-11
+  */
   const [user, setUser] = useState<User | null>(null);
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -372,6 +380,7 @@ export default function PipelineAppBar() {
       getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
     }
   }, []);
+  // --------- end of Thomas' Corthay part-----------
 
   return (
     <AppBar position="fixed">
@@ -405,6 +414,13 @@ export default function PipelineAppBar() {
             </Box>
           )}
         </Box>
+
+        {/**
+         * @author Thomas Corthay (s241749)
+         * @date 2024-10-11
+         * @description Displays buttons for toggling a table, viewing outputs, and showing user initials if logged in.
+         */
+        }
         < Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
           <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
             <Typography variant="body1" sx={{ color: "white" }}>Show Status</Typography>
@@ -448,7 +464,13 @@ export default function PipelineAppBar() {
         </Button>
       </Toolbar >
 
-      {/* Execution History Dialog */}
+      {/**
+       * @author Thomas Corthay (s241749) & Grace Ledin (s241742)
+       * @date 2024-12-16
+       * @description Displays an execution history dialog with a table showing timestamps. 
+       * Provides a close button and handles empty history gracefully.
+       */
+      }
       <Dialog
         open={executionHistoryOpen}
         onClose={() => setExecutionHistoryOpen(false)}
@@ -577,6 +599,13 @@ export default function PipelineAppBar() {
         </Box>
       </Modal >
 
+      {
+        /** 
+         * @author Thomas Corthay (s241749)
+         * @date 2024-10-11
+         * @description Display detailed user information with actions to log out or close.
+        */
+      }
       {
         selectedUser && (
           <Box
