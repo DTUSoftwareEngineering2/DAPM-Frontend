@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @author Thomas Corthay
+ * @date 2024-11-10
+ * @description Contains the `User` interface definition and the `getUserInfo` function to fetch 
+ * and format user information from the backend using an access token.
+ */
+
 import { fetchUserInfo } from "../services/backendAPI";
 
 export interface User {
