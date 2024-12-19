@@ -3,6 +3,9 @@ import axios from "../../services/backendAPI";
 import { AxiosError } from "axios";
 import useAuth from "../../hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
+
+// s232976
+// Function for handling login
 const Login = () => {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
@@ -24,6 +27,10 @@ const Login = () => {
     setErrMsg("");
   }, [email, pwd]);
 
+  // function for handling submit of form
+  // if FE validation is passed, request is made to the endpoint
+  // if request is successful, user is logged in and navigated to the home page
+  // in case if request is not successful, error message is displayed
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -49,14 +56,14 @@ const Login = () => {
         } else if (err.response?.status === 400) {
           setErrMsg("Missing Emailname or Password");
         } else if (err.response?.status === 401) {
-          setErrMsg("Unauthorized, contact admin");
+          setErrMsg("Unauthorized, contact Admin or or Manager");
         } else {
           setErrMsg("Login Failed");
         }
       }
     }
   };
-
+  // HTML for Login form
   return (
     <section>
       <p

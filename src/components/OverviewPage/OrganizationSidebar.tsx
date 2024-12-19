@@ -64,10 +64,12 @@ export default function PersistentDrawerLeft() {
     window.open(url, "_blank");
   }
 
+  /**
+   * @author Thomas Corthay (s241749)
+   * @date 2024-10-18
+   */
   const [user, setUser] = useState<User | null>(null);
-
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
   const [users, setUsers] = useState<User[]>([]);
   const [showUsers, setShowUsers] = useState(false);
 
@@ -88,7 +90,18 @@ export default function PersistentDrawerLeft() {
     }
   };
 
-  // Toggle display of users and fetch them if needed
+  useEffect(() => {
+    if (auth?.accessToken) {
+      getUserInfo(auth.accessToken).then(userInfo => setUser(userInfo));
+    }
+  }, []);
+  // --------- end of Thomas' Corthay part-----------
+
+  /**
+   * @author Thomas Corthay (s241749) & Ma
+   * @date 2024-10-18
+   * @description Toggle display of users and fetch them if needed
+   */
   const handleShowUsers = () => {
     if (!showUsers) {
       fetchAndSetUsers();
@@ -102,6 +115,8 @@ export default function PersistentDrawerLeft() {
     }
   }, []);
 
+  // s232976
+  // handle response for accetping and declinling users into organization, refresh view afterwards
   const handleAdminResponse = async (
     userId: string,
     accept: number,
@@ -112,7 +127,8 @@ export default function PersistentDrawerLeft() {
       await fetchAndSetUsers();
     }
   };
-
+  //s232976
+  // function to delete user from organization
   const handleDeleteUser = async (userId: string) => {
     if (auth.accessToken) {
       await DeleteUser(auth.accessToken, userId);
@@ -193,7 +209,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map(resource =>
                     resource.repositoryId === repository.id &&
-                    resource.type !== "operator" ? (
+                      resource.type !== "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton
@@ -206,7 +222,7 @@ export default function PersistentDrawerLeft() {
                             <IconButton
                               edge="end"
                               aria-label="delete"
-                              onClick={() => {}}>
+                              onClick={() => { }}>
                               <DeleteIcon />
                             </IconButton>
                           </ListItemButton>
@@ -233,7 +249,7 @@ export default function PersistentDrawerLeft() {
                   </div>
                   {resources.map(resource =>
                     resource.repositoryId === repository.id &&
-                    resource.type === "operator" ? (
+                      resource.type === "operator" ? (
                       <>
                         <ListItem key={resource.id} disablePadding>
                           <ListItemButton sx={{ paddingBlock: 0 }}>
@@ -244,7 +260,7 @@ export default function PersistentDrawerLeft() {
                             <IconButton
                               edge="end"
                               aria-label="delete"
-                              onClick={() => {}}>
+                              onClick={() => { }}>
                               <DeleteIcon />
                             </IconButton>
                           </ListItemButton>
@@ -274,173 +290,204 @@ export default function PersistentDrawerLeft() {
           </>
         ))}
       </List>
-      {showUsers && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "#606060",
-            padding: "20px",
-            borderRadius: "10px",
-            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
-            zIndex: 10,
-            width: "calc(100% - 240px)",
-            height: "100%",
-            marginLeft: "120px",
-            overflowY: "auto",
-            scrollbarWidth: "thin",
-            scrollbarColor: "#292929 #606060",
-          }}>
-          <Button
+      {/* Logic to handle view of the user list, 
+        the user list will be displayed based on the showUsers state which is triggered by a button*/}
+
+      {/**
+      * @author Thomas Corthay (s241749) & Màrk Gyöngyösi (s232976)
+      * @date 2024-10-18
+      * @description Renders a modal displaying a sortable, interactive list of users.
+      * Includes functionality for accepting/rejecting users, deleting users, and managing roles with responsive buttons.
+      */
+      }
+      {
+        showUsers && (
+          <Box
             sx={{
-              position: "absolute",
-              top: "10px",
-              right: "10px",
-              padding: "4px",
-              color: "white",
-              fontSize: "24px",
-              backgroundColor: "red",
-              "&:hover": {
-                backgroundColor: "#ff3333",
-                opacity: 0.8,
-              },
-            }}
-            onClick={() => setShowUsers(false)}>
-            X
-          </Button>
-          <Typography variant="h6" sx={{ marginBottom: "10px" }}>
-            Users List
-          </Typography>
-          <List
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginX: "20px",
-              padding: "0",
-              gap: "8px",
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "#606060",
+              padding: "20px",
+              borderRadius: "10px",
+              boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+              zIndex: 10,
+              width: "calc(100% - 240px)",
+              height: "100%",
+              marginLeft: "120px",
+              overflowY: "auto",
+              scrollbarWidth: "thin",
+              scrollbarColor: "#292929 #606060",
             }}>
-            {users
-              .sort((a, b) =>
-                a.accepted === b.accepted ? 0 : a.accepted ? 1 : -1
-              )
-              .map(rand_user => (
-                <ListItem
-                  key={rand_user.id}
-                  disablePadding
-                  sx={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "10px",
-                    backgroundColor: "#4A4A4A",
-                    borderRadius: "5px",
-                  }}>
-                  <ListItemText
-                    primary={`${rand_user.firstName} ${rand_user.lastName}`}
-                    secondary={`Id: ${rand_user.id}`}
+            <Button
+              sx={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                padding: "4px",
+                color: "white",
+                fontSize: "24px",
+                backgroundColor: "red",
+                "&:hover": {
+                  backgroundColor: "#ff3333",
+                  opacity: 0.8,
+                },
+              }}
+              // s232976
+              // extra X button to close the user list, updates the showUsers state
+              onClick={() => setShowUsers(false)}>
+              X
+            </Button>
+            <Typography variant="h6" sx={{ marginBottom: "10px" }}>
+              Users List
+            </Typography>
+            <List
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                marginX: "20px",
+                padding: "0",
+                gap: "8px",
+              }}>
+              {/* s232976, sort users based on their role, unaccepted users will be displayed first, accepted users will be displayed last */}
+              {users
+                .sort((a, b) =>
+                  a.accepted === b.accepted ? 0 : a.accepted ? 1 : -1
+                )
+                // mapping users to a list item with buttons for each user
+                .map(rand_user => (
+                  <ListItem
+                    key={rand_user.id}
+                    disablePadding
                     sx={{
-                      flex: 1,
-                    }}
-                  />
-                  <Box
-                    sx={{
+                      width: "100%",
                       display: "flex",
-                      justifyContent: "flex-end",
-                      marginLeft: "10px",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "10px",
+                      backgroundColor: "#4A4A4A",
+                      borderRadius: "5px",
                     }}>
-                    {rand_user.accepted === 1 ? (
-                      <>
-                        <Button
-                          variant="contained"
-                          style={{ width: "138px" }}
-                          color="error"
-                          onClick={() =>
-                            handleDeleteUser(rand_user.id.toString())
-                          }>
-                          Delete
-                        </Button>
-                        {rand_user.role === 2 &&
-                        (auth.role === 1 ||
-                          localStorage.getItem("role") === "1") ? (
+                    <ListItemText
+                      primary={`${rand_user.firstName} ${rand_user.lastName}`}
+                      secondary={`Id: ${rand_user.id}`}
+                      sx={{
+                        flex: 1,
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        marginLeft: "10px",
+                      }}>
+                      {/* s232976, conditional rendering of buttons based on user's role and the user's accepted status */}
+                      {rand_user.accepted === 1 ? (
+                        <>
                           <Button
                             variant="contained"
-                            color="primary"
-                            sx={{ marginLeft: "10px" }}
+                            style={{ width: "138px" }}
+                            color="error"
+                            onClick={() =>
+                              handleDeleteUser(rand_user.id.toString())
+                            }>
+                            Delete
+                          </Button>
+                          {rand_user.role === 2 &&
+                            (auth.role === 1 ||
+                              localStorage.getItem("role") === "1") ? (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              sx={{ marginLeft: "10px" }}
+                              onClick={() =>
+                                handleAdminResponse(rand_user.id.toString(), 1, 3)
+                              }>
+                              Remove Manager
+                            </Button>
+                          ) : (
+                            ""
+                          )}
+                          {/* s232976, adding manager role handling with buttons, only available for admins */}
+                          {(rand_user.role === 0 || rand_user.role === 3) &&
+                            (auth.role === 1 ||
+                              localStorage.getItem("role") === "1") ? (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              sx={{ marginLeft: "10px" }}
+                              onClick={() =>
+                                handleAdminResponse(rand_user.id.toString(), 1, 2)
+                              }>
+                              Add Manager
+                            </Button>
+                          ) : (
+                            ""
+                          )}
+                        </>
+                      ) : (
+                        // s232976, conditional rendering of buttons, accept and decline buttons to handle unaccepted users
+                        <>
+                          <Button
+                            variant="contained"
+                            color="success"
+                            sx={{ marginRight: "10px" }}
                             onClick={() =>
                               handleAdminResponse(rand_user.id.toString(), 1, 3)
                             }>
-                            Remove Manager
+                            ✓
                           </Button>
-                        ) : (
-                          ""
-                        )}
-
-                        {(rand_user.role === 0 || rand_user.role === 3) &&
-                        (auth.role === 1 ||
-                          localStorage.getItem("role") === "1") ? (
                           <Button
                             variant="contained"
-                            color="primary"
-                            sx={{ marginLeft: "10px" }}
-                            onClick={() =>
-                              handleAdminResponse(rand_user.id.toString(), 1, 2)
-                            }>
-                            Add Manager
+                            color="error"
+                            onClick={() => {
+                              handleAdminResponse(rand_user.id.toString(), 0, 3);
+                              handleDeleteUser(rand_user.id.toString());
+                            }}>
+                            ✕
                           </Button>
-                        ) : (
-                          ""
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          sx={{ marginRight: "10px" }}
-                          onClick={() =>
-                            handleAdminResponse(rand_user.id.toString(), 1, 3)
-                          }>
-                          ✓
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => {
-                            handleAdminResponse(rand_user.id.toString(), 0, 3);
-                            handleDeleteUser(rand_user.id.toString());
-                          }}>
-                          ✕
-                        </Button>
-                      </>
-                    )}
-                  </Box>
-                </ListItem>
-              ))}
-          </List>
-        </Box>
-      )}
+                        </>
+                      )}
+                    </Box>
+                  </ListItem>
+                ))}
+            </List>
+          </Box>
+        )
+      }
+      {/* s232976, completely hide functionality by removing trigger button from non admin or manager users */}
 
-      {(auth.role === 1 ||
-        localStorage.getItem("role") === "1" ||
-        auth.role === 2 ||
-        localStorage.getItem("role") === "2") && (
-        <Button
-          onClick={handleShowUsers}
-          variant="contained"
-          color="primary"
-          sx={{
-            position: "fixed",
-            bottom: 48,
-            width: "240px",
-            height: "40px",
-          }}>
-          {showUsers ? "Hide Users" : "Show All Users"}
-        </Button>
-      )}
+
+      {/**
+    * @author Thomas Corthay (s241749) & Màrk Gyöngyösi (s232976)
+    * @date 2024-10-18
+    * @description Renders a button to toggle the visibility of the user list, displayed conditionally based on the user's role.
+    * The button text dynamically updates to reflect the current state (show or hide users).
+    */
+      }
+      {
+        (auth.role === 1 ||
+          localStorage.getItem("role") === "1" ||
+          auth.role === 2 ||
+          localStorage.getItem("role") === "2") && (
+          <Button
+            onClick={handleShowUsers}
+            variant="contained"
+            color="primary"
+            sx={{
+              position: "fixed",
+              bottom: 48,
+              width: "240px",
+              height: "40px",
+            }}>
+            {showUsers ? "Hide Users" : "Show All Users"}
+          </Button>
+        )
+      }
+
+
       <Button
         onClick={logout}
         variant="contained"
@@ -448,32 +495,40 @@ export default function PersistentDrawerLeft() {
         sx={{ position: "fixed", bottom: 0, left: 0 }}>
         Logout
       </Button>
-      {user ? (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            marginRight: "20px",
-            position: "fixed",
-            bottom: 0,
-            left: 120,
-          }}>
-          <Button
-            key={user?.id}
-            variant="contained"
-            color="info"
+
+
+      {/**
+      * @author Thomas Corthay (s241749)
+      * @date 2024-10-18
+      */
+      }
+      {
+        user ? (
+          <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              marginRight: "15px",
-              cursor: "pointer",
-            }}
-            onClick={() => user && setSelectedUser(user)}>
-            <Box
-              className="status-rectangle"
-              sx={
-                user
-                  ? {
+              marginRight: "20px",
+              position: "fixed",
+              bottom: 0,
+              left: 120,
+            }}>
+            <Button
+              key={user?.id}
+              variant="contained"
+              color="info"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "15px",
+                cursor: "pointer",
+              }}
+              onClick={() => user && setSelectedUser(user)}>
+              <Box
+                className="status-rectangle"
+                sx={
+                  user
+                    ? {
                       width: "87px",
                       height: "34px",
                       display: "flex",
@@ -483,54 +538,63 @@ export default function PersistentDrawerLeft() {
                       fontWeight: "bold",
                       fontSize: "16px",
                     }
-                  : {}
-              }>
-              {user ? user.firstName + " " + user.lastName[0] : ""}
-            </Box>
-          </Button>
-        </Box>
-      ) : null}
-      {selectedUser && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "#606060",
-            padding: "20px",
-            borderRadius: "10px",
-            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
-            zIndex: 10,
-          }}>
-          <Typography variant="h6" sx={{ marginBottom: "10px" }}>
-            {" "}
-            {selectedUser.firstName + " " + selectedUser.lastName}
-          </Typography>
-          <Typography variant="body1">
-            <strong>ID :</strong> {selectedUser.id}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Status :</strong>{" "}
-            {selectedUser.status.charAt(0).toUpperCase() +
-              selectedUser.status.slice(1)}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Organization :</strong> {selectedUser.organizationid}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Email :</strong> {selectedUser.email}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Role :</strong> {selectedUser.role}
-          </Typography>
-          <Button
-            onClick={() => setSelectedUser(null)}
-            sx={{ marginTop: "10px" }}>
-            Close
-          </Button>
-        </Box>
-      )}
-    </Drawer>
+                    : {}
+                }>
+                {user ? user.firstName + " " + user.lastName[0] : ""}
+              </Box>
+            </Button>
+          </Box>
+        ) : null
+      }
+
+      {/**
+      * @author Thomas Corthay (s241749)
+      * @date 2024-10-18
+      */
+      }
+      {
+        selectedUser && (
+          <Box
+            sx={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "#606060",
+              padding: "20px",
+              borderRadius: "10px",
+              boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+              zIndex: 10,
+            }}>
+            <Typography variant="h6" sx={{ marginBottom: "10px" }}>
+              {" "}
+              {selectedUser.firstName + " " + selectedUser.lastName}
+            </Typography>
+            <Typography variant="body1">
+              <strong>ID :</strong> {selectedUser.id}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Status :</strong>{" "}
+              {selectedUser.status.charAt(0).toUpperCase() +
+                selectedUser.status.slice(1)}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Organization :</strong> {selectedUser.organizationid}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Email :</strong> {selectedUser.email}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Role :</strong> {selectedUser.role}
+            </Typography>
+            <Button
+              onClick={() => setSelectedUser(null)}
+              sx={{ marginTop: "10px" }}>
+              Close
+            </Button>
+          </Box>
+        )
+      }
+    </Drawer >
   );
 }

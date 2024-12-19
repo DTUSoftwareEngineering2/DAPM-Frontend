@@ -19,6 +19,9 @@ export interface OutputFile {
   content: string; // File content
 }
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export interface PipelineCardProps {
   id: string;
   name: string;
@@ -27,31 +30,14 @@ export interface PipelineCardProps {
   outputs: OutputFile[]; // Array of output files
 }
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export default function MediaCard({ id, name, imgData, status, outputs }: PipelineCardProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [open, setOpen] = React.useState(false);  // State to control dialog open/close
   const [isPrivate, setIsPrivate] = React.useState(true);
-
-  /* // Fetch pipeline visibility  from the backend
-  useEffect(() => {
-    // Fetch the pipeline visibility from the backend and update the state
-    const fetchPipelineState = async () => {
-      try {
-        const response = await fetch('/api/pipeline/state');
-        const data = await response.json();
-        setIsPrivate(data.isPrivate);
-      } catch (error) {
-        console.error('Error fetching pipeline state:', error);
-      }
-    };
-    fetchPipelineState();
-  }, []);
-  */
-
-  const getLabelColor = () => {
-    return isPrivate ? '#6F42C1' : '#28A745';
-  };
 
   const navigateToPipeline = () => {
     dispatch(setActivePipeline(id));
@@ -118,20 +104,6 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
       <CardActionArea onClick={navigateToPipeline}>
         <CardMedia sx={{ height: 140 }} title={name} image={imgData} />
         <CardContent>
-          <Typography
-            variant="body2"
-            style={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              color: 'white',
-              backgroundColor: getLabelColor(),
-              padding: '4px 8px',
-              borderRadius: 4,
-            }}
-          >
-            {isPrivate ? 'Private' : 'Public'}
-          </Typography>
           <Typography gutterBottom variant="h5" component="div">
             {name}
           </Typography>
@@ -152,6 +124,10 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
               zIndex: 2,
             }}
           />
+      {/* 
+      Author: Grace Ledin (s241742)
+      Description: This section includes a button to view outputs if the status is 'faulty' or 'completed'. It also includes a Dialog to display the pipeline's outputs with options to download individual files or all files at once.
+      */}
           {(status.toLowerCase() === 'faulty' || status.toLowerCase() === 'completed') && (
             <Button size="small" color="primary" onClick={handleDialogOpen}>
               View Outputs
@@ -200,6 +176,7 @@ export default function MediaCard({ id, name, imgData, status, outputs }: Pipeli
           </Button>
         </DialogActions>
       </Dialog>
+      {/* --------- end of Grace Ledin's part ----------- */}
     </Card>
   );
 }

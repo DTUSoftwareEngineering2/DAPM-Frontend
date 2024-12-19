@@ -12,15 +12,20 @@ import { getOrganizations } from "../../redux/selectors/apiSelector";
 import { Organization } from "../../redux/states/apiState";
 import { useNavigate } from "react-router-dom";
 
+// s232976
+// Component for user registration
 const Register = () => {
   const navigate = useNavigate();
+  // Organizations are fetched from the redux store enabling users to sign up to a specific organization
   const organizations: Organization[] = useAppSelector(getOrganizations);
 
+  // Regex for validating email and password
   const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const PWD_REGEX = /^(?=.*[a-z])[a-zA-Z0-_]{8,24}$/;
   const emailRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLParagraphElement>(null);
 
+  // use effects and form elements declared for form validation and user feedback
   const [email, setUser] = useState("");
   const [validEmail, setValidEmail] = useState(false);
   const [emailFocus, setEmailFocus] = useState(false);
@@ -52,6 +57,10 @@ const Register = () => {
     setErrMsg("");
   }, [email, pwd, matchPwd]);
 
+  // function for handling submit of form
+  // if FE validation is passed, request is made to the endpoint
+  // if request is successful, user is logged in and navigated to the Login page
+  // login is always required before accessing the application
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const v1 = EMAIL_REGEX.test(email);
@@ -86,6 +95,8 @@ const Register = () => {
     }
   };
 
+  // form for user registration
+  // form fields are validated and user feedback is provided
   return (
     <section>
       <p

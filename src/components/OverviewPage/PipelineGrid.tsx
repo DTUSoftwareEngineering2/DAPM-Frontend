@@ -20,6 +20,9 @@ import { useEffect, useState } from "react";
 import { OutputFile } from "./PipelineCard";
 import { fetchPipelineStatus } from "../../services/backendAPI";
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export default function AutoGrid() {
   const navigate = useNavigate();
 
@@ -109,6 +112,7 @@ export default function AutoGrid() {
     );
   });
 
+  // @s242147 and @s241747  : Code to fetch pipeline output and changes in the return section
   const dataSinks = useSelector(getDataSinks);
   const resources = useSelector(getResources);
 

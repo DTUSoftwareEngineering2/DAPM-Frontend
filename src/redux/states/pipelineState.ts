@@ -1,6 +1,7 @@
 import { Edge, Node } from 'reactflow';
 import { Organization, Repository, Resource } from './apiState';
 
+// @s242147 and @s241747  : Added the attribute dataSinks to the PipelineState interface
 export interface PipelineState {
   pipelines: PipelineData[]
   activePipelineId: string,
@@ -17,6 +18,9 @@ export interface HistoryItem {
   edges: Edge<EdgeData>[];
 };
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export interface PipelineData {
     id: string;
     name: string;

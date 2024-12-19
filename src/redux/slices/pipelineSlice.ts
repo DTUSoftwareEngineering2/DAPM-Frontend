@@ -32,6 +32,9 @@ const pipelineSlice = createSlice({
       if (!pipeline) return
       pipeline.imgData = payload.imgData
     },
+    /**
+     * @author Yasser_Bennani  
+     */
     deletePipeline: (state, { payload }: PayloadAction<string>) => {
       state.pipelines = state.pipelines.filter(pipeline => pipeline.id !== payload);
       // Reset activePipelineId if the deleted pipeline was active
@@ -39,6 +42,9 @@ const pipelineSlice = createSlice({
         state.activePipelineId = '';
       }
     },
+    /**
+     * @author Yasser_Bennani
+     */
     duplicatePipeline: (state, action: PayloadAction<string>) => {
       const pipelineToDuplicate = state.pipelines.find(pipeline => pipeline.id === action.payload);
       if (pipelineToDuplicate) {
@@ -217,6 +223,7 @@ const pipelineSlice = createSlice({
 
       activeFlowData.edges = payload;
     },
+    // s242147 and s241747 : Implementing the setDataSinks action
     setDataSinks(state, action: PayloadAction<any[]>) {
       state.dataSinks = action.payload;
     },
