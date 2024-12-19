@@ -19,6 +19,9 @@ export interface OutputFile {
   content: string; // File content
 }
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export interface PipelineCardProps {
   id: string;
   name: string;
@@ -27,6 +30,9 @@ export interface PipelineCardProps {
   outputs: OutputFile[]; // Array of output files
 }
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export default function MediaCard({ id, name, imgData, status, outputs }: PipelineCardProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch();

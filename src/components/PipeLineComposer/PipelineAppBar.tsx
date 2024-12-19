@@ -78,6 +78,9 @@ const downloadAllFiles = () => {
   });
 };
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export default function PipelineAppBar() {
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -424,9 +427,9 @@ export default function PipelineAppBar() {
           )}
         </Box>
         < Box sx={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
-          <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
+          {/* <Button onClick={toggleTable} sx={{ marginRight: '20px' }}>
             <Typography variant="body1" sx={{ color: "white" }}>Show Status</Typography>
-          </Button>
+          </Button> */}
           <Button onClick={handleDialogOpen} sx={{ marginRight: '20px' }}>
             <Typography variant="body1" sx={{ color: "white" }}>View Outputs</Typography>
           </Button>
