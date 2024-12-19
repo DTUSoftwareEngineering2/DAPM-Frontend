@@ -18,6 +18,9 @@ export interface HistoryItem {
   edges: Edge<EdgeData>[];
 };
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export interface PipelineData {
     id: string;
     name: string;

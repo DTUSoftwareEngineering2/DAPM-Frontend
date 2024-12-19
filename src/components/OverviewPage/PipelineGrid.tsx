@@ -20,6 +20,9 @@ import { useEffect, useState } from "react";
 import { OutputFile } from "./PipelineCard";
 import { fetchPipelineStatus } from "../../services/backendAPI";
 
+/**
+ * @author Yasser_Bennani (modified)
+ */
 export default function AutoGrid() {
   const navigate = useNavigate();
 
